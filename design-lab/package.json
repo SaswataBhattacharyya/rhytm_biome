@@ -1,0 +1,23 @@
+{
+  "name": "rhythm-biome-design-lab",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Rhythm Biome D0 design specimen workspace: Next.js web + Expo native + shared tokens/fixtures. Synthetic only; not the production scaffold.",
+  "workspaces": [
+    "shared",
+    "web",
+    "mobile"
+  ],
+  "scripts": {
+    "web:dev": "npm run dev -w @rb-lab/web",
+    "web:build": "npm run build -w @rb-lab/web",
+    "web:start": "npm run start -w @rb-lab/web",
+    "mobile:start": "npm run start -w @rb-lab/mobile",
+    "mobile:android": "npm run android -w @rb-lab/mobile",
+    "typecheck": "npm run typecheck -w @rb-lab/shared && npm run typecheck -w @rb-lab/web && npm run typecheck -w @rb-lab/mobile",
+    "lint": "npm run lint -w @rb-lab/web && npm run lint -w @rb-lab/mobile"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}

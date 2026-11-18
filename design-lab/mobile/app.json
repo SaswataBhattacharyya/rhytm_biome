@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "Rhythm Biome D0",
+    "slug": "rhythm-biome-d0-specimen",
+    "scheme": "rhythmbiome-d0",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/brand/rhythmbiome-app-icon.png",
+    "newArchEnabled": true,
+    "platforms": ["android"],
+    "android": {
+      "package": "com.rhythmbiome.d0specimen",
+      "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/rhythmbiome-icon-simplified-white.png",
+        "backgroundColor": "#0F3D3E"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/rhythmbiome-icon-simplified-white.png",
+          "imageWidth": 120,
+          "backgroundColor": "#0F3D3E"
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/HankenGrotesk-Regular.ttf",
+            "./assets/fonts/HankenGrotesk-Medium.ttf",
+            "./assets/fonts/HankenGrotesk-SemiBold.ttf",
+            "./assets/fonts/HankenGrotesk-Bold.ttf",
+            "./assets/fonts/IBMPlexMono-Medium.ttf"
+          ]
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

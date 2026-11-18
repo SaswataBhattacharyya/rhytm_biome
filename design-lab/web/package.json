@@ -1,0 +1,28 @@
+{
+  "name": "@rb-lab/web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Rhythm Biome D0 web specimen (Next.js App Router). Synthetic only.",
+  "scripts": {
+    "dev": "next dev --port 3210",
+    "build": "next build",
+    "start": "next start --port 3210",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@rb-lab/shared": "0.0.0",
+    "next": "15.5.x",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@types/node": "^22.0.0",
+    "@types/react": "~19.1.10",
+    "@types/react-dom": "~19.1.7",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "15.5.x",
+    "typescript": "~5.9.2"
+  }
+}
