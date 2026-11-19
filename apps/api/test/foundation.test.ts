@@ -13,7 +13,7 @@ test('local date follows the selected timezone across midnight', () => {
   assert.equal(localDateAt('America/Los_Angeles', instant), '2026-11-18');
 });
 
-test('two signed sessions, revisions, consent and durable check-in retry', async () => {
+test('two signed sessions, durable check-in and sandbox cart', async () => {
   const databaseUrl = process.env.RB_TEST_DATABASE_URL;
   assert(databaseUrl, 'RB_TEST_DATABASE_URL must point at a disposable migrated database.');
   const issuer = new URL('http://127.0.0.1:54321/auth/v1');
@@ -30,7 +30,7 @@ test('two signed sessions, revisions, consent and durable check-in retry', async
   let app = await createApp(pool, verify);
   await app.init();
 
-  const request = async (method: 'GET' | 'PATCH' | 'PUT', url: string, token?: string, payload?: object, key?: string) => {
+  const request = async (method: 'GET' | 'PATCH' | 'PUT' | 'POST' | 'DELETE', url: string, token?: string, payload?: object, key?: string) => {
     const result = await app.inject({
       method, url, payload,
       headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), ...(key ? { 'idempotency-key': key } : {}) },
@@ -85,6 +85,38 @@ test('two signed sessions, revisions, consent and durable check-in retry', async
     assert.equal((await request('PUT', `/v1/me/logs/${today}`, tokenA, { ...input, status: 'partial', answers: [] }, 'today-log')).status, 200);
     assert.equal((await request('GET', '/v1/me/bootstrap', tokenA)).body.data.today_log_status, 'partial');
 
+    assert.equal((await request('POST', '/v1/carts', undefined, undefined, 'cart-open-a')).status, 401);
+    const opened = await request('POST', '/v1/carts', tokenA, undefined, 'cart-open-a');
+    assert.equal(opened.status, 201);
+    const cartUrl = '/v1/carts/' + opened.body.data.id;
+    const testLine = cartUrl + '/items/' + randomUUID();
+    const skuLine = cartUrl + '/items/' + randomUUID();
+    const testItem = { kind: 'test', subject_id: 'a0000000-0000-4000-8000-000000000001', quantity: 1, base_revision: 1 };
+    const skuItem = { kind: 'sku', subject_id: 'b0000000-0000-4000-8000-000000000002', quantity: 1, base_revision: 2 };
+    const [addedKit, kitRetry] = await Promise.all([
+      request('PUT', testLine, tokenA, testItem, 'cart-add-kit'),
+      request('PUT', testLine, tokenA, testItem, 'cart-add-kit'),
+    ]);
+    assert.equal(addedKit.status, 200);
+    assert.deepEqual(addedKit.body, kitRetry.body);
+    assert.equal(addedKit.body.data.items[0].unit_price_paise, 249900);
+    assert.equal((await request('PUT', skuLine, tokenA, { ...skuItem, base_revision: 1 }, 'cart-stale')).body.error.code, 'REVISION_CONFLICT');
+    assert.equal((await request('PUT', skuLine, tokenA, { ...skuItem, subject_id: 'b0000000-0000-4000-8000-000000000003' }, 'cart-unavailable')).body.error.code, 'ITEM_UNAVAILABLE');
+    const addedBoth = await request('PUT', skuLine, tokenA, skuItem, 'cart-add-sku');
+    assert.equal(addedBoth.status, 200);
+    assert.deepEqual(addedBoth.body.data.items.map((line: { kind: string }) => line.kind), ['test', 'sku']);
+    assert.equal(addedBoth.body.data.items[1].option_label, 'Small');
+    assert.equal((await request('GET', cartUrl, tokenB)).status, 404);
+    assert.equal((await request('PUT', skuLine, tokenB, skuItem, 'cart-other')).status, 404);
+    assert.deepEqual((await request('POST', '/v1/carts', tokenB, undefined, 'cart-open-b')).body.data.items, []);
+    const [qtyA, qtyB] = await Promise.all([
+      request('PUT', skuLine, tokenA, { ...skuItem, base_revision: 3, quantity: 2 }, 'cart-qty-a'),
+      request('PUT', skuLine, tokenA, { ...skuItem, base_revision: 3, quantity: 3 }, 'cart-qty-b'),
+    ]);
+    assert.deepEqual([qtyA.status, qtyB.status].sort(), [200, 409]);
+    const updatedCart = [qtyA, qtyB].find(result => result.status === 200)!.body;
+    assert.deepEqual((await request('GET', cartUrl, tokenA)).body, updatedCart);
+
     const client = await pool.connect();
     try {
       await client.query('begin');
@@ -104,6 +136,11 @@ test('two signed sessions, revisions, consent and durable check-in retry', async
     await app.listen(0, '127.0.0.1');
 
     assert.deepEqual((await request('PUT', logUrl, tokenA, input, 'daily-create')).body, saved.body);
+    assert.deepEqual((await request('POST', '/v1/carts', tokenA, undefined, 'cart-resume')).body, updatedCart);
+    const removed = await request('DELETE', testLine + '?base_revision=4', tokenA, undefined, 'cart-remove');
+    assert.equal(removed.status, 200);
+    assert.equal(removed.body.data.items.length, 1);
+    assert.deepEqual((await request('DELETE', testLine + '?base_revision=4', tokenA, undefined, 'cart-remove')).body, removed.body);
     const clientAPI = createDailyClient(await app.getUrl(), () => tokenA);
     const { data, response } = await clientAPI.GET('/v1/me/progress', { params: { query: range } });
     assert.equal(response.status, 200);

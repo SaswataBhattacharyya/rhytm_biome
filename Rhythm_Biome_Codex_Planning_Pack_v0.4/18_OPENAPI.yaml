@@ -1443,6 +1443,7 @@ paths:
   /v1/carts:
     post:
       operationId: postV1Carts
+      description: Open or resume the signed-in account's sandbox cart. Use a new idempotency key when starting a new session.
       tags:
       - carts
       responses:
@@ -1764,6 +1765,13 @@ paths:
           type: string
           minLength: 8
           maxLength: 128
+      - name: base_revision
+        in: query
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
   /v1/carts/{id}/quote:
     post:
       operationId: postV1CartsIdQuote
@@ -5762,6 +5770,10 @@ components:
           format: int64
         currency:
           const: INR
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
         eligibility_summary:
           type: string
       required:
@@ -5832,16 +5844,17 @@ components:
           enum:
           - sku
           - test
-          - package
         subject_id:
           type: string
           format: uuid
         quantity:
           type: integer
           minimum: 1
+          maximum: 10
         base_revision:
           type: integer
           minimum: 1
+          maximum: 2147483647
       required:
       - kind
       - subject_id
@@ -5859,18 +5872,29 @@ components:
           enum:
           - sku
           - test
-          - package
         subject_id:
           type: string
           format: uuid
         quantity:
           type: integer
           minimum: 1
+          maximum: 10
+        title:
+          type: string
+        option_label:
+          type: string
+        unit_price_paise:
+          type: integer
+          minimum: 0
+          format: int64
+          description: Published unit price at the last accepted line update. Cart display only. Checkout requires a new server quote.
       required:
       - line_id
       - kind
       - subject_id
       - quantity
+      - title
+      - unit_price_paise
       additionalProperties: false
     Cart:
       type: object

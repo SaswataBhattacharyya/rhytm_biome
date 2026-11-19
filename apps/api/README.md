@@ -19,7 +19,6 @@ docker exec -i rhythm-biome-foundation-test psql -U postgres -v ON_ERROR_STOP=1 
   < supabase/migrations/20261118000100_daily_foundation.sql
 docker exec rhythm-biome-foundation-test psql -U postgres -v ON_ERROR_STOP=1 -c \
   "create role rb_test login password 'local-test-api'; grant rb_api to rb_test; create role rb_auth login password 'local-test-auth'; create schema auth authorization rb_auth;"
-RB_TEST_DATABASE_URL=postgresql://rb_test:local-test-api@127.0.0.1:55432/postgres npm test
 
 node apps/api/scripts/generate-auth-fixture.mjs /tmp/rhythm-biome-pilot-auth.env /tmp/rhythm-biome-pilot-accounts.json
 docker run -d --rm --name rhythm-biome-pilot-auth --network rhythm-biome-pilot \
@@ -65,3 +64,25 @@ RB_CATALOGUE_SEED_DATABASE_URL=postgresql://postgres:local-test-admin@127.0.0.1:
 ```
 
 The seed leaves existing rows intact. The API runtime role can read only published catalogue rows and has no catalogue write grants. The four public routes require no sign-in. Missing and unpublished details return 404. Enable connected reads with `NEXT_PUBLIC_RB_CATALOG_SOURCE=api` on web and `EXPO_PUBLIC_RB_CATALOG_SOURCE=api` on Android, using the existing API base settings.
+
+
+## Sandbox cart
+
+Apply the cart migration after both catalogue and check-in migrations. Run the tests after the catalogue seed so the cart suite has the synthetic kit and enabled and disabled pouch sizes.
+
+```bash
+docker exec -i rhythm-biome-foundation-test psql -U postgres -v ON_ERROR_STOP=1 --single-transaction \
+  < supabase/migrations/20261119000200_sandbox_cart.sql
+RB_TEST_DATABASE_URL=postgresql://rb_test:local-test-api@127.0.0.1:55432/postgres npm test
+```
+
+All cart endpoints require a signed-in synthetic account. One cart persists per account across web and Android.
+
+| Operation | Request |
+| --- | --- |
+| Open or resume | `POST /v1/carts` with an `Idempotency-Key` and no body. Use a fresh key for a new open operation. |
+| Reload | `GET /v1/carts/{id}` |
+| Add or set quantity | `PUT /v1/carts/{id}/items/{line_id}` with `Idempotency-Key` and `{ kind, subject_id, quantity, base_revision }`. Use a client-generated UUID on add and reuse the existing line ID for an existing kind and subject. `kind` is `test` or `sku`. Send the desired final quantity from 1 to 10. |
+| Remove | `DELETE /v1/carts/{id}/items/{line_id}?base_revision=N` with `Idempotency-Key` |
+
+Every success returns `{ data: Cart }`. Use the returned revision for the next change. Keep the same key, route and payload when retrying an operation with an unknown outcome. A successful retry replays its original cart snapshot. It may be older than a cart you just read. On a revision conflict, reload before offering a new edit. The server rejects missing, unpublished or unavailable items and prevents duplicate lines for the same kit or SKU. The stored unit price is the catalogue price at the last accepted line change. Label cart totals as estimated. Shipping, quotes, orders and payments are outside this cart slice.

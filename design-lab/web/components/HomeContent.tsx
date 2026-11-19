@@ -1,7 +1,8 @@
 /**
  * Public homepage specimen (brief 29 "Public homepage composition").
  * Copy is illustrative and pending brand/scientific review: no outcomes,
- * testimonials, statistics or prices.
+ * statistics or prices. Experts and Testimonials (Relay 08) use visibly
+ * synthetic samples and sit directly below the service-card sequence.
  */
 import Link from 'next/link';
 import { COMPOSITE_OFF_AT, TRANSITION_VIEWPORTS } from '../microscope/layout';
@@ -12,6 +13,7 @@ import { MicroscopeStage } from './MicroscopeStage';
 import { PanelArt } from './PanelArt';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
+import { HomeTrust } from './trust/HomeTrust';
 
 const PANELS = [
   {
@@ -132,6 +134,7 @@ export function HomeContent() {
 
       <div className="lower">
         <DriftLane index={0} />
+        <HomeTrust />
         <MeetMicrobes />
         <DriftLane index={1} />
         <section id="how-it-works" className="lower-section" aria-labelledby="how-title">

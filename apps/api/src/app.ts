@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import {
   Body, Catch, Controller, Get, Headers, HttpException, Inject, Module, Param, Patch, Put,
-  Query, UnauthorizedException, UnprocessableEntityException, createParamDecorator,
+  Query, UnauthorizedException,
   type ArgumentsHost, type CanActivate, type ExecutionContext, type ExceptionFilter,
 } from '@nestjs/common';
 import { APP_GUARD, NestFactory, Reflector } from '@nestjs/core';
@@ -12,11 +12,8 @@ import { z } from 'zod';
 import { consentChange, consentQuery, dailyLogInput, date, idempotencyKey, profilePatch, progressQuery } from './daily-contract.js';
 import { CatalogueController, CATALOGUE_POOL, PUBLIC_ROUTE } from './catalogue.js';
 import { DailyStore } from './store.js';
-
-type IdentityRequest = { headers: { authorization?: string }; userId?: string };
-const UserId = createParamDecorator((_, context: ExecutionContext) =>
-  context.switchToHttp().getRequest<IdentityRequest>().userId,
-);
+import { CartController } from './cart.js';
+import { UserId, validated, type IdentityRequest } from './request.js';
 
 export function sessionVerifier(issuer: URL, keySet: JWTVerifyGetKey = createRemoteJWKSet(
   new URL(issuer.href.replace(/\/$/, '') + '/.well-known/jwks.json'),
@@ -38,12 +35,6 @@ export function sessionVerifier(issuer: URL, keySet: JWTVerifyGetKey = createRem
     }
     throw new UnauthorizedException('Sign in to continue.');
   };
-}
-
-function validated<T>(schema: z.ZodType<T>, value: unknown) {
-  const result = schema.safeParse(value);
-  if (!result.success) throw new UnprocessableEntityException('Check the request fields.');
-  return result.data;
 }
 
 class SessionGuard implements CanActivate {
@@ -139,7 +130,7 @@ class MeController {
 
 export async function createApp(pool: Pool, verify: ReturnType<typeof sessionVerifier>, webOrigin?: string) {
   @Module({
-    controllers: [MeController, CatalogueController],
+    controllers: [MeController, CatalogueController, CartController],
     providers: [
       { provide: CATALOGUE_POOL, useValue: pool },
       { provide: DailyStore, useValue: new DailyStore(pool) },
@@ -154,7 +145,7 @@ export async function createApp(pool: Pool, verify: ReturnType<typeof sessionVer
     done();
   });
   const app = await NestFactory.create<NestFastifyApplication>(ApiModule, adapter, { logger: false, abortOnError: false });
-  if (webOrigin) app.enableCors({ origin: webOrigin, allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key'] });
+  if (webOrigin) app.enableCors({ origin: webOrigin, allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key'], methods: ['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE'] });
   app.useGlobalFilters(new ApiErrors());
   return app;
 }

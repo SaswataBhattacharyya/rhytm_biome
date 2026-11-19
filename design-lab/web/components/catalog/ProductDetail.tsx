@@ -5,6 +5,7 @@ import { defaultSku, formatINR, productDetailSections, skuLabel, spokenINR, visi
 import { BackLink, ListSkeleton, NotFound, PreviewLabel, PurchaseNote, ReadError } from './CatalogBits';
 import { useCatalog, useCatalogRead } from './CatalogContext';
 import { ProductGallery } from './ProductMedia';
+import { ProductReviews } from '../trust/ProductReviews';
 
 export function ProductDetail({ slug }: { slug: string }) {
   const { source, hidden, withReview } = useCatalog();
@@ -73,6 +74,7 @@ export function ProductDetail({ slug }: { slug: string }) {
           </div>
         </div>
       ) : null}
+      {product ? <ProductReviews slug={product.slug} /> : null}
     </article>
   );
 }

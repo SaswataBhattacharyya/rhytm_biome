@@ -7,6 +7,7 @@ const spec = parse(await readFile(source, 'utf8'));
 const implementedPaths = [
   '/v1/me', '/v1/me/bootstrap', '/v1/me/consents', '/v1/me/logs/{local_date}', '/v1/me/progress',
   '/v1/catalog/tests', '/v1/catalog/tests/{id}', '/v1/catalog/products', '/v1/catalog/products/{slug}',
+  '/v1/carts', '/v1/carts/{id}', '/v1/carts/{id}/items/{line_id}',
 ];
 const schemas = {};
 

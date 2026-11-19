@@ -17,6 +17,7 @@ Run `npm run typecheck`, `npm run lint`, and `npm run web:build` to check the sp
 ## Progress
 
 - The website has the interactive microscope, illustrated knowledge cards, and Tests and Products catalogues with individual detail pages.
+- Web includes the Experts directory, homepage testimonials and read-only sample product ratings.
 - Android has a compact Home, catalogue browsing and daily check-ins with offline retry and conflict resolution. Web Progress shows check-ins saved through the same synthetic account.
 - The shared API supports synthetic sign-in, daily check-ins, progress and published catalogue reads. The [API guide](apps/api/README.md) covers local setup, migrations and catalogue seeding.
-- The next slice adds test-kit images on catalogue cards and detail pages, plus Add to cart on web and Android as part of sandbox checkout.
+- The [sandbox cart API](apps/api/README.md#sandbox-cart) stores one cart per account and supports idempotent add, quantity updates and removal. Next are test-kit imagery and the connected cart interface on both platforms, followed by sandbox checkout.

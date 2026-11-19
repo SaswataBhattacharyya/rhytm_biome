@@ -179,7 +179,7 @@ export class DailyStore {
     };
   }
 
-  private async mutateOnce<T>(
+  async mutateOnce<T>(
     client: PoolClient, userId: string, scope: string, key: string, input: object,
     mutate: () => Promise<T>, authorize?: () => Promise<void>,
   ): Promise<T> {
