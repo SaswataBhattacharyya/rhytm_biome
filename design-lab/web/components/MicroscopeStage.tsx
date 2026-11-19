@@ -216,6 +216,10 @@ export function MicroscopeStage() {
           });
         };
         const onResize = () => {
+          // Crossing paths are laid out around controls that move on resize:
+          // hand the organism back first so the engine rescales it with the rest.
+          crossings?.release();
+          crossings?.clear();
           engine.resize();
           crossings?.setHosts(hosts());
           crossings?.resize();
@@ -249,6 +253,7 @@ export function MicroscopeStage() {
           events: () => engine.events(),
           previewWriggle: (i: number | null, tau?: number) => engine.previewWriggle(i, tau),
           hover: (i: number | null) => engine.setHovered(i),
+          resizeEvents: () => engine.resizeEvents(),
           organisms: () => (lastInfo ? lastInfo.organisms.map((o) => ({ ...o })) : []),
         };
 

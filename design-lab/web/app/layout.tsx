@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
+import { DailySessionProvider } from '../components/DailySession';
 import { PrefsProvider } from '../components/PrefsProvider';
 import { THEME_BOOT_SCRIPT } from '../lib/themeBoot';
 import './globals.css';
@@ -42,7 +43,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body>
-        <PrefsProvider>{children}</PrefsProvider>
+        <PrefsProvider>
+          {/* Relay 05: in-memory session for the synthetic daily pilot (no token persistence). */}
+          <DailySessionProvider>{children}</DailySessionProvider>
+        </PrefsProvider>
       </body>
     </html>
   );

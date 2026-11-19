@@ -1,0 +1,15 @@
+{
+  "name": "rhythm-biome",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "packages/api-client"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm run build -w @rb/api-client && npm run build -w @rb/api",
+    "test": "npm run build -w @rb/api-client && npm run test -w @rb/api"
+  }
+}

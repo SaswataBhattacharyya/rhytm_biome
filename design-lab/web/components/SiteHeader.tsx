@@ -10,6 +10,7 @@
  */
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, type FocusEvent } from 'react';
+import { useDailySession } from './DailySession';
 import { DisplaySettings } from './DisplaySettings';
 import { Logo } from './Logo';
 
@@ -26,6 +27,9 @@ export const NAV_LINKS = [
 type Mode = 'top' | 'hidden' | 'shown';
 
 export function SiteHeader() {
+  const daily = useDailySession();
+  const signedIn = daily?.state.status === 'signedIn';
+  const account = signedIn ? { href: '/account/progress', label: 'Your progress' } : { href: '/sign-in', label: 'Sign in' };
   const [mode, setMode] = useState<Mode>('top');
   const [instant, setInstant] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -177,8 +181,8 @@ export function SiteHeader() {
                 </div>
               ) : null}
             </div>
-            <Link href="/sign-in" className="header-signin" onClick={closeAll}>
-              Sign in
+            <Link href={account.href} className="header-signin" onClick={closeAll}>
+              {account.label}
             </Link>
             <Link href="/tests" className="btn btn-primary header-cta" onClick={closeAll}>
               Book a kit
@@ -214,8 +218,8 @@ export function SiteHeader() {
                   </li>
                 ))}
                 <li>
-                  <Link href="/sign-in" onClick={closeAll}>
-                    Sign in
+                  <Link href={account.href} onClick={closeAll}>
+                    {account.label}
                   </Link>
                 </li>
                 <li className="menu-cta">

@@ -1,14 +1,12 @@
-import { DemoStub } from '../../components/DemoStub';
+import { CatalogShell } from '../../components/catalog/CatalogShell';
+import { ProductsList } from '../../components/catalog/ProductsList';
 
-export const metadata = { title: 'Products — Rhythm Biome D0 specimen' };
+export const metadata = { title: 'Products — Rhythm Biome' };
 
 export default function Page() {
   return (
-    <DemoStub
-      eyebrow="Products"
-      title="Products"
-      body="Approved products will have their own clear section, separate from tests."
-      intent="Product content and pricing are not part of D0. No product data is shown or invented."
-    />
+    <CatalogShell>
+      <ProductsList />
+    </CatalogShell>
   );
 }

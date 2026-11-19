@@ -5,12 +5,18 @@
  *  - Modal with onRequestClose → Android Back closes it.
  *  - accessibilityViewIsModal; named Close button; screen-reader focus moves
  *    to the title on open and back to the opener on close.
+ *  - NATIVE-SHEET-01: focus requests are coordinated with the sheet's
+ *    lifecycle — the title is focused only after the Modal reports onShow and
+ *    the content has settled; every pending request is cancelled when the
+ *    sheet closes, reopens or unmounts, and the opener of the *current* card
+ *    gets focus back after the dismissal. Requests go to the host view via
+ *    AccessibilityInfo.sendAccessibilityEvent (no findNodeHandle).
  *  - Decorative motion is held while open and restored to the user's own
  *    choice afterwards.
  *  - Placeholder content is labelled; missing keys show "Content coming soon".
  */
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
-import { AccessibilityInfo, findNodeHandle, Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { AccessibilityInfo, Linking, Modal, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   DEMO_MISSING_KEY,
@@ -26,14 +32,33 @@ import { Banner, Button, Card, SectionTitle, Skeleton, Txt } from './ui';
 
 type View_ = { state: 'loading' } | KnowledgeLoadResult;
 
+/** After the slide-out finishes, so TalkBack lands on the opener, not the closing sheet. */
+const RESTORE_DELAY_MS = 350;
+/** After onShow + layout of the settled content. */
+const TITLE_DELAY_MS = 120;
+
+/**
+ * Schedule a screen-reader focus move. Returns a cancel function; callers
+ * return it from an effect so stale requests never fire after the state
+ * that asked for them has changed.
+ */
+function focusLater(target: () => View | Text | null | undefined, delay: number): () => void {
+  const id = setTimeout(() => {
+    const node = target();
+    if (node) AccessibilityInfo.sendAccessibilityEvent(node as Parameters<typeof AccessibilityInfo.sendAccessibilityEvent>[0], 'focus');
+  }, delay);
+  return () => clearTimeout(id);
+}
+
 export function MeetMicrobes() {
   const transport = getDemoKnowledgeTransport();
-  const { colors } = useAppTheme();
+  const { colors, reviewer } = useAppTheme();
   const [items, setItems] = useState<DemoKnowledgeRecord[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [openKey, setOpenKey] = useState<string | null>(null);
-  const openerRef = useRef<View | null>(null);
+  /** Key of the row that opened the current (or last) card. */
+  const [openerKey, setOpenerKey] = useState<string | null>(null);
   const refs = useRef(new Map<string, View | null>());
 
   useEffect(() => {
@@ -49,16 +74,20 @@ export function MeetMicrobes() {
     };
   }, [transport, attempt]);
 
-  const open = (key: string, ref: View | null) => {
-    openerRef.current = ref;
+  const open = (key: string) => {
+    setOpenerKey(key);
     setOpenKey(key);
   };
 
-  const onClosed = useCallback(() => {
-    setOpenKey(null);
-    const node = openerRef.current ? findNodeHandle(openerRef.current) : null;
-    if (node) setTimeout(() => AccessibilityInfo.setAccessibilityFocus(node), 250);
-  }, []);
+  // Idempotent: Back, the backdrop and Close can all fire for one dismissal.
+  const onClosed = useCallback(() => setOpenKey(null), []);
+
+  // Restore focus to the current opener once the sheet is gone. Re-opening
+  // (or unmounting) before the delay cancels the request.
+  useEffect(() => {
+    if (openKey !== null || openerKey === null) return;
+    return focusLater(() => refs.current.get(openerKey), RESTORE_DELAY_MS);
+  }, [openKey, openerKey]);
 
   return (
     <View style={{ gap: 12 }}>
@@ -88,7 +117,7 @@ export function MeetMicrobes() {
               accessibilityRole="button"
               accessibilityLabel={`${r.content.title}. ${r.content.kind === 'knowledge_note' ? 'Note' : 'Microbe card'}${r.content.is_placeholder ? ', placeholder' : ''}`}
               accessibilityHint="Opens the card"
-              onPress={() => open(r.content.key, refs.current.get(r.content.key) ?? null)}
+              onPress={() => open(r.content.key)}
               style={({ pressed }) => [
                 {
                   flexDirection: 'row',
@@ -114,19 +143,21 @@ export function MeetMicrobes() {
               </View>
             </Pressable>
           ))}
-          <Pressable
-            ref={(node) => {
-              refs.current.set(DEMO_MISSING_KEY, node);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="D0 check: open a card with no content yet"
-            onPress={() => open(DEMO_MISSING_KEY, refs.current.get(DEMO_MISSING_KEY) ?? null)}
-            style={{ minHeight: 48, justifyContent: 'center', borderTopWidth: 1, borderStyle: 'dashed', borderColor: colors.border }}
-          >
-            <Txt variant="caption" tone="muted">
-              D0 check (synthetic): open a card with no content yet
-            </Txt>
-          </Pressable>
+          {reviewer ? (
+            <Pressable
+              ref={(node) => {
+                refs.current.set(DEMO_MISSING_KEY, node);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Reviewer check: open a card with no content yet"
+              onPress={() => open(DEMO_MISSING_KEY)}
+              style={{ minHeight: 48, justifyContent: 'center', borderTopWidth: 1, borderStyle: 'dashed', borderColor: colors.border }}
+            >
+              <Txt variant="caption" tone="muted">
+                Reviewer check (synthetic): open a card with no content yet
+              </Txt>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
       <KnowledgeSheet cardKey={openKey} onClosed={onClosed} />
@@ -137,10 +168,17 @@ export function MeetMicrobes() {
 export function KnowledgeSheet({ cardKey, onClosed }: { cardKey: string | null; onClosed: () => void }) {
   const { colors, motionOff, holdMotion } = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { height: windowH } = useWindowDimensions();
   const [view, setView] = useState<View_>({ state: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  /** True between the Modal's onShow and the sheet closing. */
+  const [shown, setShown] = useState(false);
   const titleRef = useRef<Text>(null);
   const visible = cardKey !== null;
+
+  useEffect(() => {
+    if (!visible) setShown(false);
+  }, [visible]);
 
   // Hold decorative motion while the sheet is open; release restores the prior state.
   useEffect(() => {
@@ -158,12 +196,16 @@ export function KnowledgeSheet({ cardKey, onClosed }: { cardKey: string | null; 
     };
   }, [cardKey, attempt]);
 
-  // Move screen-reader focus to the title once content settles.
+  // Move screen-reader focus to the title only when the sheet is on screen
+  // (onShow) and its content has settled; a change of card, a retry or a
+  // close cancels the pending request.
   useEffect(() => {
-    if (!visible || 'state' in view) return;
-    const node = titleRef.current ? findNodeHandle(titleRef.current) : null;
-    if (node) setTimeout(() => AccessibilityInfo.setAccessibilityFocus(node), 150);
-  }, [visible, view]);
+    if (!visible || !shown || 'state' in view) return;
+    return focusLater(() => titleRef.current, TITLE_DELAY_MS);
+  }, [visible, shown, view]);
+
+  // Keep the sheet clear of the status bar even with large text.
+  const maxHeight = Math.min(windowH * 0.88, windowH - insets.top - 24);
 
   return (
     <Modal
@@ -171,6 +213,7 @@ export function KnowledgeSheet({ cardKey, onClosed }: { cardKey: string | null; 
       transparent
       animationType={motionOff ? 'none' : 'slide'}
       onRequestClose={onClosed}
+      onShow={() => setShown(true)}
       statusBarTranslucent
       navigationBarTranslucent
     >
@@ -184,7 +227,7 @@ export function KnowledgeSheet({ cardKey, onClosed }: { cardKey: string | null; 
         <View
           accessibilityViewIsModal
           style={{
-            maxHeight: '88%',
+            maxHeight,
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
@@ -193,8 +236,8 @@ export function KnowledgeSheet({ cardKey, onClosed }: { cardKey: string | null; 
             paddingBottom: insets.bottom + 16,
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12 }}>
-            <Txt variant="label" tone="secondary">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingHorizontal: 20, paddingTop: 12 }}>
+            <Txt variant="label" tone="secondary" style={{ flexShrink: 1 }}>
               Did you know?
             </Txt>
             <Button label="Close" kind="quiet" onPress={onClosed} accessibilityHint="Closes the card" />

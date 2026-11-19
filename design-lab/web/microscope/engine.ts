@@ -126,6 +126,12 @@ const SIM_STEP = 1 / 30;
 
 const IN_LENS_TARGET_WIDE = 10;
 const IN_LENS_TARGET_NARROW = 6.5;
+/** Fade for organisms that wake or sleep on resize (s). */
+const FADE_S = 0.6;
+/** Upper bound on GPU organisms kept across many resizes. */
+const MAX_CAPACITY = 120;
+/** Ignore count changes smaller than this share of the field (URL-bar jitter). */
+const COUNT_HYSTERESIS = 0.06;
 
 const LINK_SEGMENTS = 18;
 const LENS_RECOIL_COOLDOWN = 12;
@@ -177,6 +183,19 @@ export class MicroscopeEngine {
   private asym = new Float32Array(0);
   private lag = new Float32Array(0);
   private hidden = new Uint8Array(0);
+  /**
+   * FIELD-RESIZE-01: organisms are never re-indexed (hit identities stay
+   * stable). A resize rescales positions and changes the active count by
+   * putting organisms to sleep (fade out) or waking/adding them (fade in).
+   */
+  private dormant = new Uint8Array(0);
+  private fade = new Float32Array(0);
+  private drawOrder: number[] = [];
+  private fieldW = 0;
+  private fieldH = 0;
+  private activeCount = 0;
+  private generation = 0;
+  private resizeLog: { t: number; from: [number, number]; to: [number, number]; active: [number, number]; added: number; woke: number; slept: number }[] = [];
   private crossing = new Uint8Array(0);
   /** Review: render a fixed wriggle frame (index, tau). */
   private preview: { index: number; tau: number } | null = null;
@@ -278,7 +297,7 @@ export class MicroscopeEngine {
   setHovered(index: number | null) {
     const next = index ?? -1;
     if (next === this.hovered) return;
-    if (this.hovered >= 0 && this.movers[this.hovered]) this.movers[this.hovered].frozen = this.crossing[this.hovered] === 1;
+    if (this.hovered >= 0 && this.movers[this.hovered]) this.movers[this.hovered].frozen = this.crossing[this.hovered] === 1 || this.dormant[this.hovered] === 1;
     this.hovered = next;
     if (next >= 0 && this.movers[next]) {
       this.movers[next].frozen = true; // selection identity stays put
@@ -297,7 +316,7 @@ export class MicroscopeEngine {
   beginCrossing(index: number): OrganismVisual | null {
     const m = this.movers[index];
     const g = this.orgs[index];
-    if (!m || !g || m.frozen || this.crossing[index]) return null;
+    if (!m || !g || m.frozen || this.crossing[index] || this.dormant[index]) return null;
     this.crossing[index] = 1;
     this.hidden[index] = 1;
     m.frozen = true;
@@ -317,7 +336,7 @@ export class MicroscopeEngine {
     m.angle = angle ?? (m.swimmer ? heading : m.angle);
     this.crossing[index] = 0;
     this.hidden[index] = 0;
-    m.frozen = this.hovered === index;
+    m.frozen = this.hovered === index || this.dormant[index] === 1;
     this.requestDraw();
   }
 
@@ -362,7 +381,10 @@ export class MicroscopeEngine {
     return {
       progress: this.progress,
       time: this.time,
-      total: this.orgs.length,
+      total: this.activeCount,
+      capacity: this.orgs.length,
+      field: { w: this.fieldW, h: this.fieldH },
+      halves: this.halfCounts(),
       visible: this.screen.filter(vis).length,
       inLens: this.screen.filter((s) => s.inFocus && vis(s)).length,
       composite: realm?.composite ?? true,
@@ -390,6 +412,7 @@ export class MicroscopeEngine {
       this.canvas.height = h;
     }
     this.anchor = this.opts.getAnchor();
+    if (this.orgs.length && (this.cssW !== this.fieldW || this.cssH !== this.fieldH)) this.refit();
     const pts = this.opts.getRoamPoints?.();
     this.roam = pts && pts.length > 1 ? buildRoamPath(pts) : null;
     this.sharp = this.target(this.sharp, w, h);
@@ -467,7 +490,7 @@ export class MicroscopeEngine {
       { w: this.cssW, h: this.cssH },
     );
     for (let i = 0; i < this.movers.length; i++) {
-      if (this.hovered === i || this.crossing[i]) this.movers[i].frozen = true;
+      if (this.hovered === i || this.crossing[i] || this.dormant[i]) this.movers[i].frozen = true;
     }
     this.director = new EncounterDirector(this.seed ^ 0xe1c0, this.opts.encounterSoon ? 2 : 22);
   }
@@ -489,9 +512,13 @@ export class MicroscopeEngine {
     }
     const bounds = { w: this.cssW, h: this.cssH };
     let pushes = 0;
-    for (const m of this.movers) if (m.mode === 'push') pushes++;
+    for (let i = 0; i < this.movers.length; i++) if (!this.dormant[i] && this.movers[i].mode === 'push') pushes++;
     const ctx = { t: this.time, dt, bounds, activePushes: pushes };
-    for (const m of this.movers) stepMover(m, ctx);
+    for (let i = 0; i < this.movers.length; i++) {
+      if (!this.dormant[i]) stepMover(this.movers[i], ctx);
+      const want = this.dormant[i] ? 0 : 1;
+      if (this.fade[i] !== want) this.fade[i] = want ? Math.min(1, this.fade[i] + dt / FADE_S) : Math.max(0, this.fade[i] - dt / FADE_S);
+    }
     // LIFE-02: one rare encounter at a time, only while the field is on screen.
     if (this.progress < 0.95) {
       this.director.tryStart(this.movers, this.time, bounds);
@@ -535,11 +562,17 @@ export class MicroscopeEngine {
 
   // ------------------------------------------------------------- scene setup
 
-  private buildField(seed: number) {
+  /** Field size for the current viewport (same rule as a fresh load). */
+  private countFor(): number {
     const narrow = this.cssW < 700;
     const lensArea = Math.PI * this.anchor.r * this.anchor.r;
     const target = narrow ? IN_LENS_TARGET_NARROW : IN_LENS_TARGET_WIDE;
-    const count = Math.max(24, Math.min(80, Math.round((target * this.cssW * this.cssH) / Math.max(1, lensArea))));
+    return Math.max(24, Math.min(80, Math.round((target * this.cssW * this.cssH) / Math.max(1, lensArea))));
+  }
+
+  private buildField(seed: number) {
+    const narrow = this.cssW < 700;
+    const count = this.countFor();
     const field = createField({ seed, count, width: this.cssW, height: this.cssH, scale: narrow ? 0.85 : 1 });
     field.sort((a, b) => a.depth - b.depth); // far first
     this.orgs = field.map((o) => this.uploadOrganism(o));
@@ -548,6 +581,12 @@ export class MicroscopeEngine {
     this.wriggleEnv = new Float32Array(n);
     this.hidden = new Uint8Array(n);
     this.crossing = new Uint8Array(n);
+    this.dormant = new Uint8Array(n);
+    this.fade = new Float32Array(n).fill(1);
+    this.activeCount = n;
+    this.fieldW = this.cssW;
+    this.fieldH = this.cssH;
+    this.drawOrder = this.orgs.map((_, i) => i); // already depth-sorted
     this.asym = new Float32Array(n);
     this.lag = new Float32Array(n);
     const rng = createRng((seed ^ 0xa5a5) >>> 0);
@@ -556,20 +595,201 @@ export class MicroscopeEngine {
       this.lag[i] = 0.03 + rng() * 0.06;
     }
     this.resetMotion();
-    this.screen = this.orgs.map((g, i) => ({
-      index: i,
-      kind: g.o.kind,
-      x: 0,
-      y: 0,
-      r: 0,
-      depth: g.o.depth,
-      inFocus: false,
-      hidden: false,
-      heading: 0,
-      speed: 0,
-      angle: 0,
-      busy: false,
-    }));
+    this.screen = this.orgs.map((g, i) => this.blankScreen(i, g.o));
+  }
+
+  /**
+   * FIELD-RESIZE-01. Rescale every position into the new viewport, then match
+   * the fresh-load density: sleep the most crowded organisms when shrinking,
+   * wake sleeping ones in the sparsest places, and add new organisms there
+   * only when the pool is exhausted. Indices (hit identities) never change.
+   */
+  private refit() {
+    const fromW = this.fieldW;
+    const fromH = this.fieldH;
+    const sx = this.cssW / Math.max(1, fromW);
+    const sy = this.cssH / Math.max(1, fromH);
+    for (const m of this.movers) {
+      m.x *= sx;
+      m.y *= sy;
+      if (m.steerTo) m.steerTo = { x: m.steerTo.x * sx, y: m.steerTo.y * sy };
+    }
+    this.fieldW = this.cssW;
+    this.fieldH = this.cssH;
+    const before = this.activeCount;
+    const want = this.countFor();
+    let added = 0;
+    let woke = 0;
+    let slept = 0;
+    const band = Math.max(2, Math.round(before * COUNT_HYSTERESIS));
+    if (Math.abs(want - before) >= band) {
+      if (want < before) slept = this.sleep(before - want);
+      else {
+        woke = this.wake(want - before);
+        if (before + woke < want) added = this.addOrganisms(want - before - woke);
+      }
+    }
+    // A paused or static scene has no frames to animate the fade.
+    if (!this.running()) for (let i = 0; i < this.fade.length; i++) this.fade[i] = this.dormant[i] ? 0 : 1;
+    this.resizeLog.push({ t: this.time, from: [fromW, fromH], to: [this.cssW, this.cssH], active: [before, this.activeCount], added, woke, slept });
+    if (this.resizeLog.length > 20) this.resizeLog.shift();
+  }
+
+  /** Organisms that an interaction currently owns are never put to sleep. */
+  private busyIndex(i: number) {
+    const e = this.director.current;
+    return this.hovered === i || this.crossing[i] === 1 || (!!e && (e.a === i || e.b === i));
+  }
+
+  private nearestActive(x: number, y: number, skip: number) {
+    let best = Infinity;
+    for (let j = 0; j < this.movers.length; j++) {
+      if (j === skip || this.dormant[j]) continue;
+      const m = this.movers[j];
+      best = Math.min(best, Math.hypot(m.x - x, m.y - y));
+    }
+    return best;
+  }
+
+  private sleep(k: number): number {
+    let done = 0;
+    for (; done < k; done++) {
+      let pick = -1;
+      let crowd = Infinity;
+      for (let i = 0; i < this.movers.length; i++) {
+        if (this.dormant[i] || this.busyIndex(i)) continue;
+        const m = this.movers[i];
+        // Off-screen organisms (wrap margin) go first, then the most crowded.
+        const off = m.x < 0 || m.y < 0 || m.x > this.cssW || m.y > this.cssH ? -1e6 : 0;
+        const d = this.nearestActive(m.x, m.y, i) + off;
+        if (d < crowd) {
+          crowd = d;
+          pick = i;
+        }
+      }
+      if (pick < 0) break;
+      this.dormant[pick] = 1;
+      this.movers[pick].frozen = true;
+      this.activeCount--;
+    }
+    return done;
+  }
+
+  private wake(k: number): number {
+    let done = 0;
+    for (; done < k; done++) {
+      let pick = -1;
+      let space = -1;
+      for (let i = 0; i < this.movers.length; i++) {
+        if (!this.dormant[i]) continue;
+        const m = this.movers[i];
+        const inView = m.x >= 0 && m.y >= 0 && m.x <= this.cssW && m.y <= this.cssH;
+        const d = inView ? this.nearestActive(m.x, m.y, i) : -1;
+        if (d > space) {
+          space = d;
+          pick = i;
+        }
+      }
+      if (pick < 0) break;
+      const m = this.movers[pick];
+      if (m.x < 0 || m.y < 0 || m.x > this.cssW || m.y > this.cssH) {
+        const p = this.sparsestPoint(createRng((this.seed ^ (pick * 131 + this.generation * 17 + this.activeCount)) >>> 0));
+        m.x = p.x;
+        m.y = p.y;
+      }
+      this.dormant[pick] = 0;
+      m.frozen = this.hovered === pick || this.crossing[pick] === 1;
+      m.mode = 'drift';
+      m.modeT = 0;
+      this.activeCount++;
+    }
+    return done;
+  }
+
+  /** Best-candidate sampling: the point farthest from every active organism. */
+  private sparsestPoint(rng: () => number) {
+    let best = { x: rng() * this.cssW, y: rng() * this.cssH };
+    let bestD = -1;
+    for (let c = 0; c < 24; c++) {
+      const x = rng() * this.cssW;
+      const y = rng() * this.cssH;
+      const d = this.nearestActive(x, y, -1);
+      if (d > bestD) {
+        bestD = d;
+        best = { x, y };
+      }
+    }
+    return best;
+  }
+
+  private addOrganisms(k: number): number {
+    const room = Math.max(0, MAX_CAPACITY - this.orgs.length);
+    k = Math.min(k, room);
+    if (k <= 0) return 0;
+    this.generation++;
+    const seed = (this.seed + this.generation * 7777) >>> 0;
+    const narrow = this.cssW < 700;
+    const extra = createField({ seed, count: k, width: this.cssW, height: this.cssH, scale: narrow ? 0.85 : 1 });
+    const rng = createRng((seed ^ 0x51ce) >>> 0);
+    const start = this.orgs.length;
+    const n = start + extra.length;
+    const growF = (a: Float32Array, fill = 0) => {
+      const b = new Float32Array(n).fill(fill);
+      b.set(a);
+      return b;
+    };
+    const growU = (a: Uint8Array) => {
+      const b = new Uint8Array(n);
+      b.set(a);
+      return b;
+    };
+    this.wriggleTau = growF(this.wriggleTau);
+    this.wriggleEnv = growF(this.wriggleEnv);
+    this.hidden = growU(this.hidden);
+    this.crossing = growU(this.crossing);
+    this.dormant = growU(this.dormant);
+    this.fade = growF(this.fade, 0); // fade in
+    this.asym = growF(this.asym);
+    this.lag = growF(this.lag);
+    for (const o of extra) {
+      const p = this.sparsestPoint(rng);
+      o.homeU = p.x / this.cssW;
+      o.homeV = p.y / this.cssH;
+      const i = this.orgs.length;
+      this.orgs.push(this.uploadOrganism(o));
+      const [m] = createMovers([o], seed, { w: this.cssW, h: this.cssH });
+      m.x = p.x;
+      m.y = p.y;
+      this.movers.push(m);
+      this.asym[i] = 0.7 + rng() * 0.3;
+      this.lag[i] = 0.03 + rng() * 0.06;
+      this.screen.push(this.blankScreen(i, o));
+      this.activeCount++;
+    }
+    this.drawOrder = this.orgs.map((_, i) => i).sort((a, b) => this.orgs[a].o.depth - this.orgs[b].o.depth);
+    return extra.length;
+  }
+
+  private blankScreen(i: number, o: Organism): OrganismScreen {
+    return { index: i, kind: o.kind, x: 0, y: 0, r: 0, depth: o.depth, inFocus: false, hidden: false, heading: 0, speed: 0, angle: 0, busy: false };
+  }
+
+  /** Review: active organisms on screen in the left and right halves. */
+  private halfCounts() {
+    let left = 0;
+    let right = 0;
+    for (let i = 0; i < this.movers.length; i++) {
+      if (this.dormant[i]) continue;
+      const m = this.movers[i];
+      if (m.y < 0 || m.y > this.cssH || m.x < 0 || m.x > this.cssW) continue;
+      if (m.x < this.cssW / 2) left++;
+      else right++;
+    }
+    return { left, right };
+  }
+
+  resizeEvents() {
+    return this.resizeLog.map((r) => ({ ...r }));
   }
 
   /**
@@ -803,7 +1023,7 @@ export class MicroscopeEngine {
     const farFade = Math.max(0, Math.min(1, realm.spread - 1));
     const enc = this.director.current;
 
-    for (let i = 0; i < this.orgs.length; i++) {
+    for (const i of this.drawOrder) {
       const g = this.orgs[i];
       const m = this.movers[i];
       const sx = cx + (m.x - cx) * realm.spread;
@@ -816,13 +1036,13 @@ export class MicroscopeEngine {
       scr.heading = m.heading;
       scr.speed = m.speed;
       scr.angle = m.angle;
-      scr.hidden = this.hidden[i] === 1;
+      scr.hidden = this.hidden[i] === 1 || this.dormant[i] === 1;
       scr.busy = !!this.crossing[i] || (!!enc && (enc.a === i || enc.b === i)) || m.mode === 'recoil';
       scr.inFocus = !realm.composite || Math.hypot(sx - realm.cx, sy - realm.cy) < realm.r - scr.r * 0.5;
-      if (scr.hidden) continue;
+      if (this.hidden[i] === 1 || this.fade[i] < 0.01) continue;
       if (sx < -160 || sy < -160 || sx > this.cssW + 160 || sy > this.cssH + 160) continue;
       const soft = Math.min(1, Math.abs(g.o.depth - plane) * 1.3) * 0.85;
-      const alpha = (0.6 + 0.4 * g.o.depth) * (1 - farFade * (1 - g.o.depth) * 0.7);
+      const alpha = (0.6 + 0.4 * g.o.depth) * (1 - farFade * (1 - g.o.depth) * 0.7) * this.fade[i];
       const body = rgb01(g.o.color);
       const rim = rgb01(rimColor(g.o.color, this.theme));
       this.u2(this.progOrg, 'uCenter', sx * dpr, sy * dpr);

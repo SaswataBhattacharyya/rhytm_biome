@@ -29,3 +29,12 @@ D0 uses `@rb-lab/shared/src/fixtures.ts`, which follows `relay/D0_FIXTURE_EXPECT
 | Locale fallback | None (missing locale = missing card) | Decide fallback policy server-side if any |
 | ETag / If-None-Match | Not used by the fixture transport | Client will add conditional GET when the HTTP transport exists |
 | Pagination | Fixture honours opaque numeric `cursor`/`limit` | Real cursor stays opaque; client already treats it as such |
+
+## Relay 05 (daily pilot) — client-side findings
+
+| Gap | Effect in the UI | Request |
+|---|---|---|
+| `GET /v1/me/progress` returns counts only (`series` is empty) | Web Progress shows complete / partial / missing counts and a proportional bar, but cannot say *which* days were logged | Per-day status in range (e.g. `days: [{date, status}]`) or a ranged `GET /v1/me/logs?from&to` |
+| No server endpoint to check whether a queued idempotency key was already applied | After a lost response the client simply re-sends the same key (the API returns the stored receipt), which is correct but costs a write round-trip | None needed for M2; noted only |
+| Web session persistence | Tokens are memory-only; a reload signs the browser out | Codex-owned httpOnly-cookie exchange (Next route handler) if a durable web session is wanted |
+| GoTrue `/logout` defaults to global scope | Clients call `/logout?scope=local` so a web sign-out doesn't end the phone's session | Confirm `scope=local` on the pinned GoTrue v2.197.0 |

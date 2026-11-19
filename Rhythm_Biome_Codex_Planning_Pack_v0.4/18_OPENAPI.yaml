@@ -1,0 +1,7287 @@
+openapi: 3.1.0
+info:
+  title: Rhythm Biome API — core starter
+  version: 0.3.0
+  description: Design-time core contracts. Not deployed; complete remaining routes and nested schemas before implementing
+    each slice. All money integer paise. Use Supabase Auth for sign-in; domain access via API.
+servers:
+- url: http://localhost:3001
+  description: Local development placeholder
+x-contract-status:
+  status: starter
+  remaining:
+  - Full admin CRUD / publishing, refunds and settlement, inventory, clinical import/review, support, preferences,
+    routine edits, metric detail, future feature endpoints
+  - Exact per-component JSON schemas, conditional expressions, sync operation discriminated union, provider signature
+    headers and error schemas
+  - Validate against approved clinical protocols and real gateway/courier sandbox before release
+security:
+- bearerAuth: []
+paths:
+  /v1/app/config:
+    get:
+      operationId: getV1AppConfig
+      tags:
+      - app
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FeatureConfig'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+  /v1/app/layouts/{screen}:
+    get:
+      operationId: getV1AppLayoutsScreen
+      tags:
+      - app
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Layout'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+      parameters:
+      - name: screen
+        in: path
+        required: true
+        schema:
+          type: string
+  /v1/me:
+    get:
+      operationId: getV1Me
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Profile'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: patchV1Me
+      description: >-
+        Update fields on the authenticated user's profile. Omitted fields retain their values.
+        An explicit null clears the display name. A stale base_revision returns 409 without persisting the patch.
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Profile'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfilePatch'
+  /v1/me/bootstrap:
+    get:
+      operationId: getV1MeBootstrap
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Bootstrap'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/me/addresses:
+    get:
+      operationId: getV1MeAddresses
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Address'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+    post:
+      operationId: postV1MeAddresses
+      tags:
+      - me
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Address'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInput'
+  /v1/me/addresses/{id}:
+    patch:
+      operationId: patchV1MeAddressesId
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Address'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInput'
+    delete:
+      operationId: deleteV1MeAddressesId
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ack'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+  /v1/me/consents:
+    get:
+      operationId: getV1MeConsents
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Consent'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+    put:
+      operationId: putV1MeConsents
+      description: >-
+        Append the current owner's consent event and audit record atomically.
+        Retry with the original idempotency key and identical fields to return the original event.
+        For the local synthetic pilot, only synthetic_daily_logging / demo-1 is supported.
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Consent'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentInput'
+  /v1/catalog/products:
+    get:
+      operationId: getV1CatalogProducts
+      tags:
+      - catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/catalog/products/{slug}:
+    get:
+      operationId: getV1CatalogProductsSlug
+      tags:
+      - catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Product'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+  /v1/catalog/tests:
+    get:
+      operationId: getV1CatalogTests
+      tags:
+      - catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TestType'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/catalog/tests/{id}:
+    get:
+      operationId: getV1CatalogTestsId
+      tags:
+      - catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TestType'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /v1/catalog/packages:
+    get:
+      operationId: getV1CatalogPackages
+      tags:
+      - catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Package'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/catalog/packages/{id}:
+    get:
+      operationId: getV1CatalogPackagesId
+      tags:
+      - catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Package'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /v1/serviceability/check:
+    post:
+      operationId: postV1ServiceabilityCheck
+      tags:
+      - serviceability
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Serviceability'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceabilityInput'
+  /v1/carts:
+    post:
+      operationId: postV1Carts
+      tags:
+      - carts
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Cart'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+  /v1/carts/{id}:
+    get:
+      operationId: getV1CartsId
+      tags:
+      - carts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Cart'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /v1/carts/{id}/items/{line_id}:
+    put:
+      operationId: putV1CartsIdItemsLineId
+      tags:
+      - carts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Cart'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartLineInput'
+    delete:
+      operationId: deleteV1CartsIdItemsLineId
+      tags:
+      - carts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Cart'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+  /v1/carts/{id}/quote:
+    post:
+      operationId: postV1CartsIdQuote
+      tags:
+      - carts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Quote'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteInput'
+  /v1/orders:
+    post:
+      operationId: postV1Orders
+      tags:
+      - orders
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Order'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+    get:
+      operationId: getV1Orders
+      tags:
+      - orders
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/orders/{id}:
+    get:
+      operationId: getV1OrdersId
+      tags:
+      - orders
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Order'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /v1/orders/{id}/payment-sessions:
+    post:
+      operationId: postV1OrdersIdPaymentSessions
+      tags:
+      - orders
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PaymentSession'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+  /v1/orders/{id}/shipments:
+    get:
+      operationId: getV1OrdersIdShipments
+      tags:
+      - orders
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shipment'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/orders/{id}/cancellation-requests:
+    post:
+      operationId: postV1OrdersIdCancellationRequests
+      tags:
+      - orders
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ack'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionReason'
+  /v1/shipments/{id}/map:
+    get:
+      operationId: getV1ShipmentsIdMap
+      tags:
+      - shipments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ShipmentMap'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /v1/me/tests:
+    get:
+      operationId: getV1MeTests
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TestBooking'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/me/tests/{id}:
+    get:
+      operationId: getV1MeTestsId
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TestBooking'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /v1/me/tests/{id}/questionnaires:
+    get:
+      operationId: getV1MeTestsIdQuestionnaires
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Questionnaire'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/me/questionnaires/{id}:
+    get:
+      operationId: getV1MeQuestionnairesId
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Questionnaire'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /v1/me/questionnaires/{id}/draft:
+    patch:
+      operationId: patchV1MeQuestionnairesIdDraft
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Questionnaire'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerPatch'
+  /v1/me/questionnaires/{id}/submit:
+    post:
+      operationId: postV1MeQuestionnairesIdSubmit
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Questionnaire'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Submit'
+  /v1/me/tests/{id}/kit-activation:
+    post:
+      operationId: postV1MeTestsIdKitActivation
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TestBooking'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Activate'
+  /v1/me/tests/{id}/pickups:
+    post:
+      operationId: postV1MeTestsIdPickups
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ack'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pickup'
+  /v1/me/tests/{id}/timeline:
+    get:
+      operationId: getV1MeTestsIdTimeline
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TimelineEvent'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/me/reports:
+    get:
+      operationId: getV1MeReports
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReportSummary'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/me/reports/{id}:
+    get:
+      operationId: getV1MeReportsId
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Report'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /v1/me/reports/{id}/download-link:
+    post:
+      operationId: postV1MeReportsIdDownloadLink
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SignedLink'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+  /v1/me/routines:
+    get:
+      operationId: getV1MeRoutines
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Routine'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+    post:
+      operationId: postV1MeRoutines
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Routine'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutineInput'
+  /v1/me/logs:
+    get:
+      operationId: getV1MeLogs
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DailyLog'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/me/logs/{local_date}:
+    get:
+      operationId: getV1MeLogsLocalDate
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailyLog'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: local_date
+        in: path
+        required: true
+        schema:
+          type: string
+          format: date
+    put:
+      operationId: putV1MeLogsLocalDate
+      description: >-
+        Create a check-in with base_revision 0, or edit it using its current revision and original timezone.
+        A retry with the original idempotency key and identical data returns the original result.
+        The local pilot accepts only the synthetic mood definition and requires the synthetic consent grant.
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailyLog'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: local_date
+        in: path
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogInput'
+  /v1/me/progress:
+    get:
+      operationId: getV1MeProgress
+      description: >-
+        The local pilot returns domain-independent logging counts for an inclusive range of up to 366 days.
+        Missing days contribute only to expected. Adherence, series and comparable reports have no observations in this pilot.
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Progress'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: domain
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - gut
+          - skin
+          - vaginal
+  /v1/me/sync:
+    get:
+      operationId: getV1MeSync
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SyncPage'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+  /v1/me/sync/mutations:
+    post:
+      operationId: postV1MeSyncMutations
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SyncResult'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncBatch'
+  /v1/me/notifications:
+    get:
+      operationId: getV1MeNotifications
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+  /v1/me/notifications/{id}:
+    patch:
+      operationId: patchV1MeNotificationsId
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Notification'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+  /v1/me/devices:
+    post:
+      operationId: postV1MeDevices
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ack'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceInput'
+  /v1/me/devices/{id}:
+    delete:
+      operationId: deleteV1MeDevicesId
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ack'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+  /v1/maps/search:
+    post:
+      operationId: postV1MapsSearch
+      tags:
+      - maps
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MapResult'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapSearch'
+  /v1/maps/reverse-geocode:
+    post:
+      operationId: postV1MapsReverseGeocode
+      tags:
+      - maps
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/MapResult'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapReverse'
+  /v1/me/calendar/events:
+    get:
+      operationId: getV1MeCalendarEvents
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CalendarEvent'
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        anyOf:
+                        - type: string
+                        - type: 'null'
+                    required:
+                    - next_cursor
+                    additionalProperties: false
+                required:
+                - data
+                - meta
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+    post:
+      operationId: postV1MeCalendarEvents
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CalendarEvent'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarInput'
+  /v1/me/privacy/requests:
+    post:
+      operationId: postV1MePrivacyRequests
+      tags:
+      - me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ack'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrivacyInput'
+  /v1/admin/features/{key}:
+    get:
+      operationId: getV1AdminFeaturesKey
+      tags:
+      - admin
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FeatureConfig'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      operationId: putV1AdminFeaturesKey
+      tags:
+      - admin
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FeatureConfig'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureUpdate'
+  /v1/assistant/sessions:
+    post:
+      operationId: postV1AssistantSessions
+      tags:
+      - assistant
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ack'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+  /v1/assistant/sessions/{id}/messages:
+    post:
+      operationId: postV1AssistantSessionsIdMessages
+      tags:
+      - assistant
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AssistantReply'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistantMessage'
+  /v1/assistant/actions/{id}/confirm:
+    post:
+      operationId: postV1AssistantActionsIdConfirm
+      tags:
+      - assistant
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ack'
+                required:
+                - data
+                additionalProperties: false
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden or feature disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State or revision conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Submit'
+  /v1/webhooks/razorpay:
+    post:
+      operationId: webhookRazorpay
+      tags:
+      - webhooks
+      security: []
+      description: Provider-specific signature/auth on raw request bytes required; no consumer authentication. Verify
+        and durably accept before acknowledging. Header/schema and replay handling finalized in adapter spike.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Durably accepted
+        '400':
+          description: Invalid payload
+        '401':
+          description: Invalid provider verification
+        '503':
+          description: Retryable persistence failure
+  /v1/webhooks/cashfree:
+    post:
+      operationId: webhookCashfree
+      tags:
+      - webhooks
+      security: []
+      description: Provider-specific signature/auth on raw request bytes required; no consumer authentication. Verify
+        and durably accept before acknowledging. Header/schema and replay handling finalized in adapter spike.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Durably accepted
+        '400':
+          description: Invalid payload
+        '401':
+          description: Invalid provider verification
+        '503':
+          description: Retryable persistence failure
+  /v1/webhooks/logistics:
+    post:
+      operationId: webhookLogistics
+      tags:
+      - webhooks
+      security: []
+      description: Provider-specific signature/auth on raw request bytes required; no consumer authentication. Verify
+        and durably accept before acknowledging. Header/schema and replay handling finalized in adapter spike.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Durably accepted
+        '400':
+          description: Invalid payload
+        '401':
+          description: Invalid provider verification
+        '503':
+          description: Retryable persistence failure
+  /v1/webhooks/whatsapp:
+    post:
+      operationId: webhookWhatsapp
+      tags:
+      - webhooks
+      security: []
+      description: Provider-specific signature/auth on raw request bytes required; no consumer authentication. Verify
+        and durably accept before acknowledging. Header/schema and replay handling finalized in adapter spike.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Durably accepted
+        '400':
+          description: Invalid payload
+        '401':
+          description: Invalid provider verification
+        '503':
+          description: Retryable persistence failure
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            request_id:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+          required:
+          - code
+          - message
+          - request_id
+          additionalProperties: false
+      required:
+      - error
+      additionalProperties: false
+    Ack:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - status
+      additionalProperties: false
+    Profile:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        display_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+        timezone:
+          type: string
+        locale:
+          type: string
+        onboarding_state:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+      required:
+      - user_id
+      - display_name
+      - timezone
+      - locale
+      - onboarding_state
+      - revision
+      additionalProperties: false
+    ProfilePatch:
+      type: object
+      minProperties: 2
+      properties:
+        display_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+        timezone:
+          type: string
+        locale:
+          type: string
+        base_revision:
+          type: integer
+          minimum: 1
+      required:
+      - base_revision
+      additionalProperties: false
+    AddressInput:
+      type: object
+      properties:
+        label:
+          type: string
+        recipient_name:
+          type: string
+        phone:
+          type: string
+        line1:
+          type: string
+        line2:
+          type: string
+        landmark:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postal_code:
+          type: string
+          pattern: ^[1-9][0-9]{5}$
+        country:
+          const: IN
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+        lng:
+          type: number
+          minimum: -180
+          maximum: 180
+        location_source:
+          type: string
+          enum:
+          - manual
+          - gps
+          - search
+          - pin
+      required:
+      - label
+      - recipient_name
+      - phone
+      - line1
+      - city
+      - state
+      - postal_code
+      - country
+      additionalProperties: false
+    Address:
+      allOf:
+      - type: object
+        properties:
+          label:
+            type: string
+          recipient_name:
+            type: string
+          phone:
+            type: string
+          line1:
+            type: string
+          line2:
+            type: string
+          landmark:
+            type: string
+          city:
+            type: string
+          state:
+            type: string
+          postal_code:
+            type: string
+            pattern: ^[1-9][0-9]{5}$
+          country:
+            const: IN
+          lat:
+            type: number
+            minimum: -90
+            maximum: 90
+          lng:
+            type: number
+            minimum: -180
+            maximum: 180
+          location_source:
+            type: string
+            enum:
+            - manual
+            - gps
+            - search
+            - pin
+        required:
+        - label
+        - recipient_name
+        - phone
+        - line1
+        - city
+        - state
+        - postal_code
+        - country
+      - type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          revision:
+            type: integer
+            minimum: 1
+        required:
+        - id
+        - revision
+      unevaluatedProperties: false
+    FeatureConfig:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        min_build:
+          type: integer
+          minimum: 1
+        features:
+          type: object
+          additionalProperties:
+            type: boolean
+        component_capabilities:
+          type: array
+          items:
+            type: string
+      required:
+      - version
+      - min_build
+      - features
+      - component_capabilities
+      additionalProperties: false
+    Component:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        schema_version:
+          type: integer
+          minimum: 1
+        props:
+          type: object
+          additionalProperties: true
+      required:
+      - id
+      - type
+      - schema_version
+      - props
+      additionalProperties: false
+    Layout:
+      type: object
+      properties:
+        key:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+      required:
+      - key
+      - version
+      - components
+      additionalProperties: false
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        width:
+          type: integer
+          minimum: 1
+        height:
+          type: integer
+          minimum: 1
+        alt_text:
+          type: string
+      required:
+      - id
+      - url
+      - width
+      - height
+      - alt_text
+      additionalProperties: false
+    Sku:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sku_code:
+          type: string
+        format:
+          type: string
+        size_label:
+          type: string
+        price_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        currency:
+          const: INR
+        available:
+          type: boolean
+      required:
+      - id
+      - sku_code
+      - format
+      - size_label
+      - price_paise
+      - currency
+      - available
+      additionalProperties: false
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+        skus:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sku'
+      required:
+      - id
+      - slug
+      - title
+      - description
+      - version
+      - media
+      - skus
+      additionalProperties: false
+    TestType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version_id:
+          type: string
+          format: uuid
+        domain:
+          type: string
+          enum:
+          - gut
+          - skin
+          - vaginal
+        title:
+          type: string
+        specimen_type:
+          type: string
+        description:
+          type: string
+        price_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        currency:
+          const: INR
+        eligibility_summary:
+          type: string
+      required:
+      - id
+      - version_id
+      - domain
+      - title
+      - specimen_type
+      - description
+      - price_paise
+      - currency
+      - eligibility_summary
+      additionalProperties: false
+    Package:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        price_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        currency:
+          const: INR
+        components:
+          type: array
+          items:
+            type: object
+            properties:
+              component_key:
+                type: string
+              kind:
+                type: string
+                enum:
+                - sku
+                - test
+              subject_id:
+                type: string
+                format: uuid
+              quantity:
+                type: integer
+                minimum: 1
+            required:
+            - component_key
+            - kind
+            - subject_id
+            - quantity
+            additionalProperties: false
+      required:
+      - id
+      - version_id
+      - title
+      - price_paise
+      - currency
+      - components
+      additionalProperties: false
+    CartLineInput:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+          - sku
+          - test
+          - package
+        subject_id:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+        base_revision:
+          type: integer
+          minimum: 1
+      required:
+      - kind
+      - subject_id
+      - quantity
+      - base_revision
+      additionalProperties: false
+    CartLine:
+      type: object
+      properties:
+        line_id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - sku
+          - test
+          - package
+        subject_id:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+      required:
+      - line_id
+      - kind
+      - subject_id
+      - quantity
+      additionalProperties: false
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
+        currency:
+          const: INR
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartLine'
+      required:
+      - id
+      - revision
+      - currency
+      - items
+      additionalProperties: false
+    QuoteInput:
+      type: object
+      properties:
+        delivery_address_id:
+          type: string
+          format: uuid
+        coupon_codes:
+          type: array
+          items:
+            type: string
+        currency:
+          const: INR
+        cart_revision:
+          type: integer
+          minimum: 1
+      required:
+      - delivery_address_id
+      - currency
+      - cart_revision
+      additionalProperties: false
+    Allocation:
+      type: object
+      properties:
+        line_id:
+          type: string
+          format: uuid
+        component_key:
+          type: string
+        base_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        discount_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        tax_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        final_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        promotion_refs:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - line_id
+      - component_key
+      - base_paise
+      - discount_paise
+      - tax_paise
+      - final_paise
+      - promotion_refs
+      additionalProperties: false
+    Quote:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cart_revision:
+          type: integer
+          minimum: 1
+        revision:
+          type: integer
+          minimum: 1
+        currency:
+          const: INR
+        subtotal_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        discount_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        tax_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        shipping_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        total_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        expires_at:
+          type: string
+          format: date-time
+        allocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Allocation'
+        eligible_methods:
+          type: array
+          items:
+            type: string
+            enum:
+            - upi
+            - card
+            - netbanking
+            - wallet
+            - cod
+        coupon_messages:
+          type: array
+          items:
+            type: string
+      required:
+      - id
+      - cart_revision
+      - revision
+      - currency
+      - subtotal_paise
+      - discount_paise
+      - tax_paise
+      - shipping_paise
+      - total_paise
+      - expires_at
+      - allocations
+      - eligible_methods
+      - coupon_messages
+      additionalProperties: false
+    OrderInput:
+      type: object
+      properties:
+        quote_id:
+          type: string
+          format: uuid
+        quote_revision:
+          type: integer
+          minimum: 1
+        payment_method:
+          type: string
+          enum:
+          - online
+          - cod
+      required:
+      - quote_id
+      - quote_revision
+      - payment_method
+      additionalProperties: false
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_number:
+          type: string
+        total_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        currency:
+          const: INR
+        payment_state:
+          type: string
+          enum:
+          - pending
+          - authorized
+          - paid
+          - failed
+          - cod_due
+          - cod_collected
+          - cod_remitted
+          - partially_refunded
+          - refunded
+        fulfillment_state:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        revision:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - order_number
+      - total_paise
+      - currency
+      - payment_state
+      - fulfillment_state
+      - created_at
+      - revision
+      additionalProperties: false
+    PaymentInput:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - upi
+          - card
+          - netbanking
+          - wallet
+        platform:
+          type: string
+          enum:
+          - android
+          - web
+          - ios
+      required:
+      - method
+      - platform
+      additionalProperties: false
+    PaymentSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        provider_order_ref:
+          type: string
+        amount_paise:
+          type: integer
+          minimum: 0
+          format: int64
+        currency:
+          const: INR
+        checkout:
+          type: object
+          properties:
+            kind:
+              type: string
+              enum:
+              - native
+              - hosted
+            public_key:
+              type: string
+            url:
+              type: string
+              format: uri
+            session_token:
+              type: string
+          required:
+          - kind
+          additionalProperties: false
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - provider
+      - provider_order_ref
+      - amount_paise
+      - currency
+      - checkout
+      - expires_at
+      additionalProperties: false
+    TimelineEvent:
+      type: object
+      properties:
+        status:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        source:
+          type: string
+        location_label:
+          type: string
+      required:
+      - status
+      - occurred_at
+      - source
+      additionalProperties: false
+    Shipment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        direction:
+          type: string
+          enum:
+          - product
+          - kit
+          - return_sample
+        awb:
+          anyOf:
+          - type: string
+          - type: 'null'
+        eta:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+        last_event_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelineEvent'
+      required:
+      - id
+      - status
+      - direction
+      - awb
+      - eta
+      - last_event_at
+      - events
+      additionalProperties: false
+    ShipmentMap:
+      type: object
+      properties:
+        evidence:
+          type: string
+          enum:
+          - scan
+          - live
+          - none
+        lat:
+          anyOf:
+          - type: number
+          - type: 'null'
+        lng:
+          anyOf:
+          - type: number
+          - type: 'null'
+        label:
+          anyOf:
+          - type: string
+          - type: 'null'
+        as_of:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+        source:
+          anyOf:
+          - type: string
+          - type: 'null'
+      required:
+      - evidence
+      - lat
+      - lng
+      - label
+      - as_of
+      - source
+      additionalProperties: false
+    TestBooking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        domain:
+          type: string
+          enum:
+          - gut
+          - skin
+          - vaginal
+        status:
+          type: string
+        questionnaire_state:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - domain
+      - status
+      - questionnaire_state
+      - revision
+      additionalProperties: false
+    Question:
+      type: object
+      properties:
+        key:
+          type: string
+        type:
+          type: string
+          enum:
+          - text
+          - number
+          - single_select
+          - multi_select
+          - boolean
+          - date
+          - scale
+          - info
+        label:
+          type: string
+        required:
+          type: boolean
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+              label:
+                type: string
+            required:
+            - value
+            - label
+            additionalProperties: false
+        unit:
+          type: string
+        visible_if:
+          type: object
+          additionalProperties: true
+      required:
+      - key
+      - type
+      - label
+      - required
+      additionalProperties: false
+    Answer:
+      type: object
+      properties:
+        question_key:
+          type: string
+        value_type:
+          type: string
+          enum:
+          - text
+          - number
+          - single_select
+          - multi_select
+          - boolean
+          - date
+          - scale
+          - missing
+        value:
+          anyOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+        unit:
+          type: string
+        missing_reason:
+          type: string
+        source:
+          type: string
+          enum:
+          - manual
+          - voice
+      required:
+      - question_key
+      - value_type
+      - value
+      - source
+      additionalProperties: false
+    Questionnaire:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version_id:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum:
+          - assigned
+          - draft
+          - submitted
+          - superseded
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+      required:
+      - id
+      - version_id
+      - revision
+      - status
+      - questions
+      - answers
+      additionalProperties: false
+    AnswerPatch:
+      type: object
+      properties:
+        base_revision:
+          type: integer
+          minimum: 1
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+      required:
+      - base_revision
+      - answers
+      additionalProperties: false
+    Submit:
+      type: object
+      properties:
+        base_revision:
+          type: integer
+          minimum: 1
+        confirmed:
+          const: true
+      required:
+      - base_revision
+      - confirmed
+      additionalProperties: false
+    Activate:
+      type: object
+      properties:
+        barcode:
+          type: string
+      required:
+      - barcode
+      additionalProperties: false
+    Pickup:
+      type: object
+      properties:
+        address_id:
+          type: string
+          format: uuid
+        requested_start:
+          type: string
+          format: date-time
+        requested_end:
+          type: string
+          format: date-time
+      required:
+      - address_id
+      - requested_start
+      - requested_end
+      additionalProperties: false
+    ReportSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        test_id:
+          type: string
+          format: uuid
+        domain:
+          type: string
+          enum:
+          - gut
+          - skin
+          - vaginal
+        version:
+          type: integer
+          minimum: 1
+        released_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - released
+          - superseded
+      required:
+      - id
+      - test_id
+      - domain
+      - version
+      - released_at
+      - status
+      additionalProperties: false
+    Metric:
+      type: object
+      properties:
+        code:
+          type: string
+        value:
+          anyOf:
+          - type: number
+          - type: 'null'
+        unit:
+          type: string
+        method_version:
+          type: string
+        reference_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+        quality_state:
+          type: string
+      required:
+      - code
+      - value
+      - unit
+      - method_version
+      - reference_version
+      - quality_state
+      additionalProperties: false
+    Report:
+      type: object
+      properties:
+        summary:
+          $ref: '#/components/schemas/ReportSummary'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metric'
+        limitations:
+          type: array
+          items:
+            type: string
+        specimen_type:
+          type: string
+      required:
+      - summary
+      - sections
+      - metrics
+      - limitations
+      - specimen_type
+      additionalProperties: false
+    SignedLink:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - url
+      - expires_at
+      additionalProperties: false
+    Dose:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        scheduled_at:
+          type: string
+          format: date-time
+        outcome:
+          type: string
+          enum:
+          - taken
+          - not_taken
+          - skipped
+          - unknown
+      required:
+      - id
+      - scheduled_at
+      - outcome
+      additionalProperties: false
+    Routine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        timezone:
+          type: string
+        start_date:
+          type: string
+          format: date
+        schedule:
+          type: object
+          additionalProperties: true
+        revision:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - label
+      - timezone
+      - start_date
+      - schedule
+      - revision
+      additionalProperties: false
+    RoutineInput:
+      type: object
+      properties:
+        sku_id:
+          type: string
+          format: uuid
+        manual_label:
+          type: string
+        timezone:
+          type: string
+        start_date:
+          type: string
+          format: date
+        schedule:
+          type: object
+          additionalProperties: true
+      required:
+      - timezone
+      - start_date
+      - schedule
+      additionalProperties: false
+    LogInput:
+      type: object
+      properties:
+        base_revision:
+          type: integer
+          minimum: 0
+        timezone:
+          type: string
+        definition_version_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - partial
+          - complete
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+        dose_outcomes:
+          type: array
+          items:
+            type: object
+            properties:
+              scheduled_dose_id:
+                type: string
+                format: uuid
+              outcome:
+                type: string
+                enum:
+                - taken
+                - not_taken
+                - skipped
+                - unknown
+            required:
+            - scheduled_dose_id
+            - outcome
+            additionalProperties: false
+      required:
+      - base_revision
+      - timezone
+      - definition_version_id
+      - status
+      - answers
+      - dose_outcomes
+      additionalProperties: false
+    DailyLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        local_date:
+          type: string
+          format: date
+        timezone:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+        definition_version_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - partial
+          - complete
+        recorded_at:
+          type: string
+          format: date-time
+        retrospective:
+          type: boolean
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+        doses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Dose'
+      required:
+      - id
+      - local_date
+      - timezone
+      - revision
+      - definition_version_id
+      - status
+      - recorded_at
+      - retrospective
+      - answers
+      - doses
+      additionalProperties: false
+    Progress:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        as_of:
+          type: string
+          format: date-time
+        logging:
+          type: object
+          properties:
+            complete:
+              type: integer
+              minimum: 0
+            partial:
+              type: integer
+              minimum: 0
+            expected:
+              type: integer
+              minimum: 0
+          required:
+          - complete
+          - partial
+          - expected
+          additionalProperties: false
+        adherence:
+          type: object
+          properties:
+            taken:
+              type: integer
+              minimum: 0
+            not_taken:
+              type: integer
+              minimum: 0
+            skipped:
+              type: integer
+              minimum: 0
+            unknown:
+              type: integer
+              minimum: 0
+            scheduled:
+              type: integer
+              minimum: 0
+          required:
+          - taken
+          - not_taken
+          - skipped
+          - unknown
+          - scheduled
+          additionalProperties: false
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              metric_code:
+                type: string
+              unit:
+                type: string
+              points:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                    value:
+                      anyOf:
+                      - type: number
+                      - type: 'null'
+                    coverage:
+                      type: integer
+                      minimum: 0
+                  required:
+                  - date
+                  - value
+                  - coverage
+                  additionalProperties: false
+            required:
+            - metric_code
+            - unit
+            - points
+            additionalProperties: false
+        comparable_reports:
+          type: array
+          items:
+            type: object
+            properties:
+              baseline_id:
+                type: string
+                format: uuid
+              latest_id:
+                type: string
+                format: uuid
+              comparable:
+                type: boolean
+              reason:
+                type: string
+            required:
+            - baseline_id
+            - latest_id
+            - comparable
+            - reason
+            additionalProperties: false
+      required:
+      - from
+      - to
+      - as_of
+      - logging
+      - adherence
+      - series
+      - comparable_reports
+      additionalProperties: false
+    Bootstrap:
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/Profile'
+        config:
+          $ref: '#/components/schemas/FeatureConfig'
+        next_actions:
+          type: array
+          items:
+            type: object
+            properties:
+              kind:
+                type: string
+              resource_id:
+                type: string
+                format: uuid
+                description: Include for actions tied to a particular resource. Omit for account-level actions.
+              label:
+                type: string
+            required:
+            - kind
+            - label
+            additionalProperties: false
+        active_tests:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestBooking'
+        active_orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+        today_log_status:
+          type: string
+          enum:
+          - none
+          - partial
+          - complete
+        unread_count:
+          type: integer
+          minimum: 0
+        as_of:
+          type: string
+          format: date-time
+      required:
+      - profile
+      - config
+      - next_actions
+      - active_tests
+      - active_orders
+      - today_log_status
+      - unread_count
+      - as_of
+      additionalProperties: false
+    SyncMutation:
+      type: object
+      properties:
+        mutation_id:
+          type: string
+          format: uuid
+        entity_id:
+          type: string
+          format: uuid
+        operation:
+          type: string
+          enum:
+          - questionnaire_draft
+          - daily_log_upsert
+          - dose_outcome
+        base_revision:
+          type: integer
+          minimum: 0
+        payload:
+          type: object
+          additionalProperties: true
+      required:
+      - mutation_id
+      - entity_id
+      - operation
+      - base_revision
+      - payload
+      additionalProperties: false
+    SyncBatch:
+      type: object
+      properties:
+        installation_id:
+          type: string
+          format: uuid
+        mutations:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/SyncMutation'
+      required:
+      - installation_id
+      - mutations
+      additionalProperties: false
+    SyncResult:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              mutation_id:
+                type: string
+                format: uuid
+              status:
+                type: string
+                enum:
+                - applied
+                - duplicate
+                - conflict
+                - rejected
+              revision:
+                type: integer
+                minimum: 0
+              error_code:
+                type: string
+            required:
+            - mutation_id
+            - status
+            additionalProperties: false
+      required:
+      - results
+      additionalProperties: false
+    SyncPage:
+      type: object
+      properties:
+        changes:
+          type: array
+          items:
+            type: object
+            properties:
+              cursor:
+                type: string
+              entity_kind:
+                type: string
+              entity_id:
+                type: string
+                format: uuid
+              revision:
+                type: integer
+                minimum: 1
+              operation:
+                type: string
+                enum:
+                - upsert
+                - delete
+            required:
+            - cursor
+            - entity_kind
+            - entity_id
+            - revision
+            - operation
+            additionalProperties: false
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+        has_more:
+          type: boolean
+      required:
+      - changes
+      - next_cursor
+      - has_more
+      additionalProperties: false
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        route_key:
+          type: string
+        resource_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+        read_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - message
+      - route_key
+      - resource_id
+      - read_at
+      - created_at
+      additionalProperties: false
+    DeviceInput:
+      type: object
+      properties:
+        installation_id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+          enum:
+          - android
+          - ios
+        push_token:
+          type: string
+        enabled:
+          type: boolean
+      required:
+      - installation_id
+      - platform
+      - push_token
+      - enabled
+      additionalProperties: false
+    ServiceabilityInput:
+      type: object
+      properties:
+        postal_code:
+          type: string
+        cart_id:
+          type: string
+          format: uuid
+      required:
+      - postal_code
+      additionalProperties: false
+    Serviceability:
+      type: object
+      properties:
+        serviceable:
+          type: boolean
+        cod_eligible:
+          type: boolean
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+        eta_days:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
+      required:
+      - serviceable
+      - cod_eligible
+      - reason
+      - eta_days
+      additionalProperties: false
+    MapSearch:
+      type: object
+      properties:
+        query:
+          type: string
+        session_token:
+          type: string
+      required:
+      - query
+      - session_token
+      additionalProperties: false
+    MapReverse:
+      type: object
+      properties:
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+        lng:
+          type: number
+          minimum: -180
+          maximum: 180
+      required:
+      - lat
+      - lng
+      additionalProperties: false
+    MapResult:
+      type: object
+      properties:
+        label:
+          type: string
+        provider_place_ref:
+          type: string
+        lat:
+          anyOf:
+          - type: number
+          - type: 'null'
+        lng:
+          anyOf:
+          - type: number
+          - type: 'null'
+      required:
+      - label
+      - provider_place_ref
+      - lat
+      - lng
+      additionalProperties: false
+    PrivacyInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - export
+          - delete
+        confirmed:
+          const: true
+      required:
+      - type
+      - confirmed
+      additionalProperties: false
+    ConsentInput:
+      type: object
+      properties:
+        purpose:
+          type: string
+        policy_version:
+          type: string
+        action:
+          type: string
+          enum:
+          - grant
+          - revoke
+      required:
+      - purpose
+      - policy_version
+      - action
+      additionalProperties: false
+    Consent:
+      type: object
+      properties:
+        purpose:
+          type: string
+        policy_version:
+          type: string
+        action:
+          type: string
+          enum:
+          - grant
+          - revoke
+        effective_at:
+          type: string
+          format: date-time
+      required:
+      - purpose
+      - policy_version
+      - action
+      - effective_at
+      additionalProperties: false
+    FeatureUpdate:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        rollout_pct:
+          type: integer
+          minimum: 0
+          maximum: 100
+        base_revision:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+      required:
+      - enabled
+      - rollout_pct
+      - base_revision
+      - reason
+      additionalProperties: false
+    ActionReason:
+      type: object
+      properties:
+        reason:
+          type: string
+        base_revision:
+          type: integer
+          minimum: 1
+      required:
+      - reason
+      additionalProperties: false
+    AssistantMessage:
+      type: object
+      properties:
+        text:
+          type: string
+        locale:
+          type: string
+      required:
+      - text
+      - locale
+      additionalProperties: false
+    AssistantReply:
+      type: object
+      properties:
+        message:
+          type: string
+        proposal:
+          anyOf:
+          - type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              kind:
+                type: string
+              summary:
+                type: string
+              expires_at:
+                type: string
+                format: date-time
+            required:
+            - id
+            - kind
+            - summary
+            - expires_at
+            additionalProperties: false
+          - type: 'null'
+      required:
+      - message
+      - proposal
+      additionalProperties: false
+    CalendarInput:
+      type: object
+      properties:
+        event_key:
+          type: string
+        title:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        recurrence:
+          anyOf:
+          - type: string
+          - type: 'null'
+      required:
+      - event_key
+      - title
+      - starts_at
+      - timezone
+      - recurrence
+      additionalProperties: false
+    CalendarEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_key:
+          type: string
+        state:
+          type: string
+      required:
+      - id
+      - event_key
+      - state
+      additionalProperties: false

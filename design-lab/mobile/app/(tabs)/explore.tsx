@@ -1,35 +1,44 @@
 /**
- * Explore — outside D0 scope. Present so the canonical five tabs have no hole
- * (UI-02); explains its limitation and preserves navigation.
+ * Explore (Relay 07): one section at a time — Learn (the full knowledge
+ * library), Tests or Products — chosen with a compact selector. Home links
+ * here with ?section=learn | catalogue | tests | products. Details open as
+ * their own screens; Android Back returns to the section you came from.
  */
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { Banner, Button, Card, Chip, Screen, Txt, s } from '../../src/components/ui';
+import { ProductsSection, TestsSection } from '../../src/components/catalog';
+import { MeetMicrobes } from '../../src/components/knowledge';
+import { Chip, Screen, Txt, s } from '../../src/components/ui';
 
-const SEGMENTS = ['Tests', 'Products', 'Packages'] as const;
+const SECTIONS = [
+  { id: 'learn', label: 'Learn' },
+  { id: 'tests', label: 'Tests' },
+  { id: 'products', label: 'Products' },
+] as const;
+type SectionId = (typeof SECTIONS)[number]['id'];
+
+const fromParam = (v: string | undefined): SectionId | null =>
+  v === 'catalogue' || v === 'tests' ? 'tests' : v === 'products' ? 'products' : v === 'learn' ? 'learn' : null;
 
 export default function ExploreScreen() {
-  const [seg, setSeg] = useState<(typeof SEGMENTS)[number]>('Tests');
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const [sel, setSel] = useState<SectionId>(fromParam(section) ?? 'learn');
+  useEffect(() => {
+    const p = fromParam(section);
+    if (p) setSel(p);
+  }, [section]);
   return (
     <Screen>
       <Txt variant="display" accessibilityRole="header">
         Explore
       </Txt>
-      <View style={s.row} accessibilityRole="radiogroup" accessibilityLabel="Catalogue section">
-        {SEGMENTS.map((x) => (
-          <Chip key={x} label={x} selected={seg === x} onPress={() => setSeg(x)} />
+      <View style={s.row} accessibilityRole="radiogroup" accessibilityLabel="Explore section">
+        {SECTIONS.map((x) => (
+          <Chip key={x.id} label={x.label} selected={sel === x.id} onPress={() => setSel(x.id)} />
         ))}
       </View>
-      <Banner
-        title="Catalogue is a later slice"
-        body={`${seg} come from the published catalogue in the commerce slice (B2). This specimen shows no products, tests or prices.`}
-      />
-      <Card>
-        <Txt variant="bodyStrong">Meanwhile in this specimen</Txt>
-        <Button label="Try today's check-in" onPress={() => router.push('/log')} />
-        <Button label="See the report layout" kind="secondary" onPress={() => router.push({ pathname: '/reports', params: { state: 'syntheticLayout' } })} />
-      </Card>
+      {sel === 'learn' ? <MeetMicrobes /> : sel === 'tests' ? <TestsSection /> : <ProductsSection />}
     </Screen>
   );
 }

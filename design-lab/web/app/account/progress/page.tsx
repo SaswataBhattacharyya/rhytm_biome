@@ -1,14 +1,16 @@
-import { DemoStub } from '../../../components/DemoStub';
+import { AccountPage } from '../../../components/AccountPage';
+import { ProgressView } from '../../../components/ProgressView';
 
-export const metadata = { title: 'Your progress — Rhythm Biome D0 specimen' };
+export const metadata = { title: 'Your progress — Rhythm Biome' };
 
 export default function Page() {
   return (
-    <DemoStub
+    <AccountPage
       eyebrow="Your progress"
       title="Your progress"
-      body="Your own check-ins over time, shown separately from lab measurements."
-      intent="Progress needs real logged data and arrives with slice B1. No score or percentage is invented here."
-    />
+      lede="How many days you checked in, for the dates you choose. Kept separate from lab measurements."
+    >
+      <ProgressView />
+    </AccountPage>
   );
 }

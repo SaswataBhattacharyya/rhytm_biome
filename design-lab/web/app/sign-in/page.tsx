@@ -1,14 +1,12 @@
-import { DemoStub } from '../../components/DemoStub';
+import { AccountPage } from '../../components/AccountPage';
+import { SignInForm } from '../../components/SignInForm';
 
-export const metadata = { title: 'Sign in — Rhythm Biome D0 specimen' };
+export const metadata = { title: 'Sign in — Rhythm Biome' };
 
 export default function Page() {
   return (
-    <DemoStub
-      eyebrow="Account"
-      title="Sign in"
-      body="Sign in to see your reports, daily log and progress."
-      intent="Authentication arrives with the foundation slice (B0). After sign-in you would return to the page you asked for."
-    />
+    <AccountPage eyebrow="Account" title="Sign in" lede="Sign in with a synthetic pilot account to see your check-in progress.">
+      <SignInForm />
+    </AccountPage>
   );
 }

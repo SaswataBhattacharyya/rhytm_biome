@@ -44,6 +44,8 @@ All brand files are **unmodified copies** of the owner-supplied sources (checked
 | Relay 02: knowledge-card illustrations (`hairy_sphere`, `short_rod`, `twin_strand_rod`, `cell_chain`, `note_lens`, `note_log`) | `web/components/KnowledgeArt.tsx`, `mobile/src/components/art.tsx` (`KnowledgeArt`) |
 | Relay 02: ambient gutter organisms | `web/components/AmbientAccents.tsx` |
 | Relay 03: escape-wriggle deformation, push/coast/turn/pulse motion, pair encounter link (abstract, illustrative — not a depiction of conjugation or any real mechanism), control crossings | `web/microscope/motion.ts`, `shaders.ts`, `engine.ts`, `crossings.ts` |
+| Relay 04: lower-homepage drift organisms (generated from the shared shape model, low opacity) and the compact native Home rows | `web/components/LowerAmbient.tsx`, `mobile/app/(tabs)/index.tsx` |
+| Relay 07: catalogue preview illustrations `pouch-1..3.png`, `single-1.png` — abstract shapes in the Rhythm Biome palette, each labelled "SYNTHETIC PREVIEW · n of m", generated for this project (PIL, IBM Plex Mono label). Used only by the `gallery` fixture scenario. | `web/public/catalog-preview/`, `mobile/assets/catalog-preview/` |
 
 Decorative microbe colours follow the owner's non-brand exception (brief 29). They are not status colours or species identifications.
 

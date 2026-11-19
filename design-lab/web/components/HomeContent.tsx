@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import { COMPOSITE_OFF_AT, TRANSITION_VIEWPORTS } from '../microscope/layout';
 import { KnowledgeProvider } from './KnowledgeProvider';
+import { DriftLane } from './LowerAmbient';
 import { MeetMicrobes } from './MeetMicrobes';
 import { MicroscopeStage } from './MicroscopeStage';
 import { PanelArt } from './PanelArt';
@@ -31,7 +32,7 @@ const PANELS = [
     href: '/account/log',
     art: 'log' as const,
     title: 'Daily log',
-    body: 'Record how you feel and your routine in under a minute. Missing days stay visibly missing.',
+    body: 'Check in on Android and see your saved days in web Progress.',
     accent: 'var(--accent-vaginal)',
   },
   {
@@ -130,7 +131,9 @@ export function HomeContent() {
       </div>
 
       <div className="lower">
+        <DriftLane index={0} />
         <MeetMicrobes />
+        <DriftLane index={1} />
         <section id="how-it-works" className="lower-section" aria-labelledby="how-title">
           <h2 id="how-title">How testing works</h2>
           <ol className="steps">
@@ -147,6 +150,7 @@ export function HomeContent() {
           <p className="fineprint">Statuses in the product follow the lab protocol, not this illustration.</p>
         </section>
 
+        <DriftLane index={2} />
         <section className="lower-section" aria-labelledby="discover-title">
           <h2 id="discover-title">Three areas at launch</h2>
           <ul className="category-row">
@@ -166,6 +170,7 @@ export function HomeContent() {
           <p className="fineprint">Catalogue details arrive with the commerce slice. No prices are shown in this specimen.</p>
         </section>
 
+        <DriftLane index={3} />
         <section id="faq" className="lower-section" aria-labelledby="faq-title">
           <h2 id="faq-title">Science and FAQ</h2>
           <div className="faq">
@@ -177,6 +182,7 @@ export function HomeContent() {
             ))}
           </div>
         </section>
+        <DriftLane index={4} />
         <SiteFooter />
       </div>
     </KnowledgeProvider>

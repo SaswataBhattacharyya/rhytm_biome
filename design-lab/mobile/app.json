@@ -8,7 +8,9 @@
     "userInterfaceStyle": "automatic",
     "icon": "./assets/brand/rhythmbiome-app-icon.png",
     "newArchEnabled": true,
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "android": {
       "package": "com.rhythmbiome.d0specimen",
       "edgeToEdgeEnabled": true,
@@ -39,7 +41,8 @@
             "./assets/fonts/IBMPlexMono-Medium.ttf"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": false

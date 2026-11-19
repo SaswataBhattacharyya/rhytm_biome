@@ -61,6 +61,57 @@ All densities, timings and scale factors are provisional tuning for M1.
 
 `web/microscope/skimmers.ts` is now an empty, unused module (orbits retired); Codex may delete it.
 
+## Relay 04 — fullscreen coverage, lower motion, compact Android Home
+
+| ID | Where | Review hook |
+|---|---|---|
+| FIELD-RESIZE-01 field follows the viewport | `engine.ts` (`refit`, `sleep`, `wake`, `addOrganisms`); `MicroscopeStage.tsx` releases a crossing before resize | resize the window or toggle fullscreen; `__rbD0.snapshot().halves` / `.total` / `.capacity`, `__rbD0.resizeEvents()` |
+| AMBIENT-LOWER-01 sparse motion below the services | `web/components/LowerAmbient.tsx` (`DriftLane`), `.drift*` in `globals.css` | scroll past the service cards; Pause / reduced motion |
+| NATIVE-HOME-01 compact Home + Explore library + reviewer mode | `mobile/app/(tabs)/index.tsx`, `explore.tsx`, `settings.tsx`, `src/components/ui.tsx` (`ListRow`, gated `StateSwitcher`), `ThemeProvider.tsx` (`reviewer`) | Profile → Reviewer tools, or `rhythmbiome-d0://?reviewer=1` |
+| NATIVE-SHEET-01 sheet focus lifecycle + status-bar scrim | `mobile/src/components/knowledge.tsx` (`focusLater`, `onShow`), `ui.tsx` (`Screen` scrim) | open a card, Back, rapid open/close with TalkBack |
+
+## Relay 07 — catalogue (Tests and Products)
+
+| Area | Where |
+|---|---|
+| Shared read model, source interface, fixture scenarios, connected adapter, section visibility, INR formatting, detail order | `shared/src/catalog/*` (reads the Codex-owned `shared/src/catalog-fixture.json`) |
+| Web lists and details | `web/app/tests`, `web/app/tests/[id]`, `web/app/products`, `web/app/products/[slug]`; `web/components/catalog/*` |
+| Web hover preview + manual gallery | `web/components/catalog/ProductMedia.tsx` |
+| Android Explore (Learn · Tests · Products) and details | `mobile/app/(tabs)/explore.tsx`, `mobile/app/catalog/test/[id].tsx`, `mobile/app/catalog/product/[slug].tsx`, `mobile/src/components/catalog.tsx`, `mobile/src/data/CatalogProvider.tsx` |
+| Original synthetic preview images | `web/public/catalog-preview/*.png`, `mobile/assets/catalog-preview/*.png` |
+
+The fixture is the default source. Connect the API with `NEXT_PUBLIC_RB_CATALOG_SOURCE=api` (web) or `EXPO_PUBLIC_RB_CATALOG_SOURCE=api` (Android) plus the API base.
+
+Review controls (not linked from navigation):
+
+- Web: `?catalog=sample|gallery|empty|slow|error|flaky` and `?hide=test.description,product.description` on any catalogue URL; the params carry over between catalogue pages.
+- Android: Profile and display → Reviewer tools → Reviewer mode → catalogue fixture scenario and "Hide …" switches.
+
+Section keys: `test.description` (Test detail · description), `product.description` (Product detail · description). Defaults live in `shared/src/catalog/visibility.ts`.
+
+## Relay 05 — synthetic sign-in, Android check-in, web Progress (M2)
+
+| Area | Where |
+|---|---|
+| Shared pilot client (contract types, HTTP + fixture adapters, session, per-account outbox) | `shared/src/daily/*` |
+| Web session (memory only), sign-in, Progress | `web/components/DailySession.tsx`, `SignInForm.tsx`, `ProgressView.tsx`, `AccountPage.tsx`; `web/app/sign-in`, `web/app/account/progress` |
+| Android secure-storage port, provider, sign-in, connected Log, account card | `mobile/src/data/secureStore.ts`, `DailyProvider.tsx`; `mobile/app/sign-in.tsx`; `mobile/src/components/DailyCheckIn.tsx`; `mobile/app/settings.tsx` |
+| Specimen Log states (moved, still reachable) | `mobile/src/components/SpecimenLog.tsx`, `/log?state=…`, `/log-specimen` (reviewer) |
+
+Connected mode needs both base URLs; otherwise every client runs the in-memory **fixture preview** (badged in the UI; accounts `ada.fixture@example.test` / `ben.fixture@example.test`, public placeholder password `fixture-preview`).
+
+```bash
+# web (.env.local in design-lab/web — Codex-owned config)
+NEXT_PUBLIC_RB_API_BASE=http://127.0.0.1:3211
+NEXT_PUBLIC_RB_AUTH_BASE=http://127.0.0.1:55433
+# Android (Expo) + loopback forwarding
+EXPO_PUBLIC_RB_API_BASE=http://127.0.0.1:3211
+EXPO_PUBLIC_RB_AUTH_BASE=http://127.0.0.1:55433
+adb reverse tcp:3211 tcp:3211 && adb reverse tcp:55433 tcp:55433
+```
+
+`?backend=fixture` on the web forces the fixture. In fixture mode `window.__rbFixture` exposes the preview backend (seed logs, simulate offline/expiry) for review.
+
 ## Native review deep links (scheme `rhythmbiome-d0`)
 
 ```bash
@@ -69,7 +120,13 @@ adb shell am start -a android.intent.action.VIEW -d "rhythmbiome-d0://log?state=
 adb shell am start -a android.intent.action.VIEW -d "rhythmbiome-d0://reports?state=syntheticLayout"
 ```
 
-Each screen also shows a dashed **"D0 specimen state (synthetic)"** chip row for switching fixture states by hand.
+In **reviewer mode** (off by default) Home, Log and Reports show a dashed **"Reviewer mode · synthetic state"** chip row, and Explore shows the empty-card check. Turn it on in Profile and display → Reviewer tools, or:
+
+```bash
+adb shell am start -a android.intent.action.VIEW -d "rhythmbiome-d0://?reviewer=1"   # ?reviewer=0 turns it off
+```
+
+`?state=` deep links keep working without reviewer mode.
 
 ## Design decisions to review
 
@@ -78,3 +135,8 @@ Each screen also shows a dashed **"D0 specimen state (synthetic)"** chip row for
 - **Native fonts:** static Hanken Grotesk instances (400/500/600/700) generated from the supplied variable TTF (`scripts/instance_hanken.py`), because Android cannot select weights from a variable font. Web uses the supplied variable file directly.
 
 See `ASSETS.md` (provenance) and `CONTRACT_GAPS.md`.
+
+
+## Relay 07 catalogue walkthrough
+
+Run the [API migration and seed](../apps/api/README.md#synthetic-catalogue), then start the two clients with the existing local Auth/API base settings. Add `NEXT_PUBLIC_RB_CATALOG_SOURCE=api` before the web build and `EXPO_PUBLIC_RB_CATALOG_SOURCE=api` before starting Metro. The sample catalogue can be browsed without an account. Visit [Tests](http://localhost:3210/tests), [Products](http://localhost:3210/products) or Android **Explore**. Use the [connected walkthrough](../relay/07_CODEX_REVIEW.md#owner-review) to review the synthetic gallery and detail screens.

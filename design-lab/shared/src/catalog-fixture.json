@@ -1,0 +1,45 @@
+{
+  "tests": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version_id": "a0000000-0000-4000-8000-000000000002",
+      "domain": "gut",
+      "title": "Gut microbiome kit",
+      "specimen_type": "Stool",
+      "description": "A sample listing for the Rhythm Biome catalogue preview.",
+      "price_paise": 249900,
+      "currency": "INR",
+      "eligibility_summary": "Eligibility details will be added after review."
+    }
+  ],
+  "products": [
+    {
+      "id": "b0000000-0000-4000-8000-000000000001",
+      "slug": "sample-storage-pouch",
+      "title": "Sample storage pouch",
+      "description": "An illustrative accessory for previewing product sizes.",
+      "version": 1,
+      "media": [],
+      "skus": [
+        {
+          "id": "b0000000-0000-4000-8000-000000000002",
+          "sku_code": "DEMO-POUCH-S",
+          "format": "Pouch",
+          "size_label": "Small",
+          "price_paise": 19900,
+          "currency": "INR",
+          "available": true
+        },
+        {
+          "id": "b0000000-0000-4000-8000-000000000003",
+          "sku_code": "DEMO-POUCH-L",
+          "format": "Pouch",
+          "size_label": "Large",
+          "price_paise": 24900,
+          "currency": "INR",
+          "available": false
+        }
+      ]
+    }
+  ]
+}

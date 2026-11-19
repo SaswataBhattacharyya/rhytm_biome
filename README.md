@@ -1,6 +1,6 @@
 # Rhythm Biome
 
-A runnable design specimen for the website and Android app. It includes the interactive microscope, themed service navigation, illustrated knowledge cards, and synthetic Home, Log, Reports and Progress screens.
+Rhythm Biome’s website, Android app and shared API pilot. The pilot uses synthetic data.
 
 ## Run locally
 
@@ -16,6 +16,7 @@ Run `npm run typecheck`, `npm run lint`, and `npm run web:build` to check the sp
 
 ## Progress
 
-The Relay 03 motion pass adds anchored body deformation, occasional microbe crossings near buttons, and a rare paired-motion vignette. The website build passes type checks, lint and production compilation. The Android specimen has been smoke-tested with Expo Go.
-
-The next milestone is owner review of the design. The first functional slice will connect synthetic authenticated accounts to consent and shared daily logging. The current specimen uses fixtures and has no live account, payment, clinical report or persistence integrations.
+- The website has the interactive microscope, illustrated knowledge cards, and Tests and Products catalogues with individual detail pages.
+- Android has a compact Home, catalogue browsing and daily check-ins with offline retry and conflict resolution. Web Progress shows check-ins saved through the same synthetic account.
+- The shared API supports synthetic sign-in, daily check-ins, progress and published catalogue reads. The [API guide](apps/api/README.md) covers local setup, migrations and catalogue seeding.
+- The next slice adds test-kit images on catalogue cards and detail pages, plus Add to cart on web and Android as part of sandbox checkout.
